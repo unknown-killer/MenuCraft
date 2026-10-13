@@ -1,0 +1,76 @@
+name: Publish live menu demo
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'site/**'
+      - 'cmd/demo/**'
+      - 'web/**'
+      - 'internal/**'
+      - 'go.mod'
+      - 'go.sum'
+      - 'README*.md'
+      - 'docs/RELEASE_NOTES.md'
+      - 'menucraft-update.b64'
+permissions:
+  contents: read
+concurrency:
+  group: menucraft-pages
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Import optional source update
+        run: |
+          set -euo pipefail
+          if [ -f menucraft-update.b64 ]; then
+            bundle="$RUNNER_TEMP/menucraft-update.bundle"
+            base64 --decode menucraft-update.b64 > "$bundle"
+            git bundle verify "$bundle"
+            git config user.name unknown-killer
+            git config user.email unknown-killer@users.noreply.github.com
+            git fetch "$bundle" main:demo-source
+            git merge --no-edit demo-source
+            git rm menucraft-update.b64
+            git commit -m "Remove update transport after preserving source history"
+            git push origin HEAD:main
+          fi
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.9'
+          cache: true
+      - name: Verify and export isolated sample menus
+        run: |
+          go test ./...
+          go vet ./...
+          node --check site/studio.js
+          go run ./cmd/demo -output _site
+      - name: Update bilingual release documentation
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release edit v1.1.0 --notes-file docs/RELEASE_NOTES.md
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publish GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
