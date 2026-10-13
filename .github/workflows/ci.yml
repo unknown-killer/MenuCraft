@@ -1,0 +1,29 @@
+name: CI
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['menucraft-source.bundle']
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  go:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.9'
+      - run: go test ./...
+      - run: go vet ./...
+      - if: runner.os == 'Linux'
+        run: |
+          go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
+          php -l wordpress/menucraft/menucraft.php
+          node --check web/static/js/menu.js
+          node --check web/static/js/menu-editor.js
+          node --check wordpress/menucraft/assets/menu.js
+
