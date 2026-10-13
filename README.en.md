@@ -86,6 +86,7 @@ Made for restaurants, cafés, fast food and other food businesses. Create a bili
 <tr><td dir="ltr" align="left">🔐 Accounts and privacy</td><td dir="ltr" align="left">Separate owner accounts, restaurant data isolation, signed sessions, signed-in password changes and private drafts.</td></tr>
 <tr><td dir="ltr" align="left">🛠️ Self-hosting</td><td dir="ltr" align="left">SQLite storage, HTTPS deployment, Docker Compose, request limits and health/readiness endpoints.</td></tr>
 </tbody></table>
+
 ## 🧪 What works in the online demo?
 
 <table dir="ltr">
@@ -96,6 +97,7 @@ Made for restaurants, cafés, fast food and other food businesses. Create a bili
 <tr><td dir="ltr" align="left">📦 Full app only</td><td dir="ltr" align="left">Owner accounts, dish editing, image uploads, freeform canvas design, database storage and real menu publishing require the Go application.</td></tr>
 <tr><td dir="ltr" align="left">🌐 Hosting</td><td dir="ltr" align="left">GitHub Pages hosts this static demo. It cannot run the Go server or SQLite database.</td></tr>
 </tbody></table>
+
 ## 📦 Choose your download
 
 <table dir="ltr">

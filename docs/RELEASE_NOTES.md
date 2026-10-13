@@ -87,6 +87,7 @@
 <tr><td dir="rtl" align="right">🔐 حساب و حریم داده</td><td dir="rtl" align="right">حساب‌های مستقل، جداسازی اطلاعات مجموعه‌ها، نشست امن، تغییر رمز پس از ورود و منوی پیش‌نویس خصوصی.</td></tr>
 <tr><td dir="rtl" align="right">🛠️ استقرار روی سرور خودتان</td><td dir="rtl" align="right">پایگاه‌دادهٔ سبک، تنظیم دامنه و اتصال امن، اجرای کانتینری، محدودیت درخواست و مسیرهای بررسی سلامت.</td></tr>
 </tbody></table>
+
 ## 🧪 در دموی آنلاین چه چیزهایی کار می‌کند؟
 
 <table dir="rtl">
@@ -97,6 +98,7 @@
 <tr><td dir="rtl" align="right">📦 در نسخهٔ کامل</td><td dir="rtl" align="right">حساب مالک، ویرایش غذاها، بارگذاری تصویر، بوم آزاد، ذخیره در پایگاه‌داده و انتشار منوی واقعی به اجرای برنامه نیاز دارند.</td></tr>
 <tr><td dir="rtl" align="right">🌐 نوع میزبانی</td><td dir="rtl" align="right">دمو روی سرویس صفحات ثابت گیت‌هاب اجرا می‌شود؛ سرور برنامه و پایگاه‌داده روی آن اجرا نمی‌شوند.</td></tr>
 </tbody></table>
+
 ## 📦 کدام فایل را دانلود کنم؟
 
 <table dir="rtl">
@@ -223,6 +225,7 @@ Made for restaurants, cafés, fast food and other food businesses. Create a bili
 <tr><td dir="ltr" align="left">🔐 Accounts and privacy</td><td dir="ltr" align="left">Separate owner accounts, restaurant data isolation, signed sessions, signed-in password changes and private drafts.</td></tr>
 <tr><td dir="ltr" align="left">🛠️ Self-hosting</td><td dir="ltr" align="left">SQLite storage, HTTPS deployment, Docker Compose, request limits and health/readiness endpoints.</td></tr>
 </tbody></table>
+
 ## 🧪 What works in the online demo?
 
 <table dir="ltr">
@@ -233,6 +236,7 @@ Made for restaurants, cafés, fast food and other food businesses. Create a bili
 <tr><td dir="ltr" align="left">📦 Full app only</td><td dir="ltr" align="left">Owner accounts, dish editing, image uploads, freeform canvas design, database storage and real menu publishing require the Go application.</td></tr>
 <tr><td dir="ltr" align="left">🌐 Hosting</td><td dir="ltr" align="left">GitHub Pages hosts this static demo. It cannot run the Go server or SQLite database.</td></tr>
 </tbody></table>
+
 ## 📦 Choose your download
 
 <table dir="ltr">
