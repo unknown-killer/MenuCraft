@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="دموی تعاملی منوساز؛ ۱۱۴ قالب، رنگ دلخواه و جابه‌جایی دسته‌های منو. Interactive MenuCraft restaurant menu demo.">
+  <title>MenuCraft · استودیوی منوی شما</title>
+  <link rel="icon" href="static/img/favicon.svg"><link rel="stylesheet" href="studio.css">
+</head>
+<body>
+<a class="skip" href="#studio" data-i18n="skip">رفتن به استودیو</a>
+<header class="topbar">
+  <a class="brand" href="./"><span class="brand-mark">🍽️</span><b dir="ltr">MenuCraft</b><span class="brand-note" data-i18n="brand">منوساز</span></a>
+  <nav aria-label="Navigation"><a href="https://github.com/unknown-killer/MenuCraft" data-i18n="source">سورس پروژه ↗</a><button id="language" type="button" lang="en" dir="ltr">English</button></nav>
+</header>
+<main>
+  <section class="hero">
+    <div><p class="eyebrow" data-i18n="eyebrow">✨ از سلیقهٔ شما، تا منوی رستوران</p><h1 data-i18n="hero">منوی شما،<br>با امضای شما.</h1><p class="intro" data-i18n="intro">یک قالب انتخاب کنید، رنگ دلخواهتان را بسازید و دسته‌ها را جابه‌جا کنید. نتیجه را همین‌جا، زنده ببینید.</p><div class="hero-actions"><a class="primary" href="#studio" data-i18n="start">🎨 شروع طراحی</a><a href="https://github.com/unknown-killer/MenuCraft/releases/latest" data-i18n="download">📦 دریافت نسخهٔ کامل</a></div></div>
+    <div class="hero-note"><span class="note-emoji">🧑‍🍳</span><strong data-i18n="noteTitle">هر رستوران، یک شخصیت.</strong><p data-i18n="note">از کافهٔ مینیمال تا رستوران سنتی؛ قالب‌ها نقطهٔ شروع‌اند، رنگ‌ها و چیدمان را شما تعیین می‌کنید.</p><div class="swatches" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div></div>
+  </section>
+  <div class="stats"><p><b>114</b><span data-i18n="themesStat">قالب قابل‌تغییر</span></p><p><b>54</b><span data-i18n="packsStat">منوی آماده در نسخهٔ کامل</span></p><p><b>FA / EN</b><span data-i18n="languagesStat">دو زبان، خوانایی درست</span></p><p><b>↔</b><span data-i18n="responsiveStat">از موبایل تا دسکتاپ</span></p></div>
+  <section id="studio" class="studio-section">
+    <div class="section-title"><div><p class="eyebrow" data-i18n="studioEyebrow">🛠️ امتحان کنید</p><h2 data-i18n="studioTitle">استودیوی زندهٔ منو</h2></div><p data-i18n="studioHint">بدون ثبت‌نام؛ تغییرات فقط در همین مرورگر ذخیره می‌شوند.</p></div>
+    <div class="studio">
+      <aside class="controls" aria-label="Design controls">
+        <h3 data-i18n="appearance">🎨 ظاهر دلخواه</h3>
+        <label for="theme" data-i18n="themeLabel">قالب شروع</label><select id="theme" disabled><option data-i18n="loading">در حال بارگذاری قالب‌ها…</option></select>
+        <div class="color-grid"><label><span data-i18n="primaryColor">رنگ اصلی</span><input id="primary" type="color" value="#c1440e"></label><label><span data-i18n="background">پس‌زمینه</span><input id="background" type="color" value="#fdf6e9"></label><label><span data-i18n="surface">رنگ کارت</span><input id="surface" type="color" value="#fffdf7"></label><label><span data-i18n="textColor">رنگ نوشته</span><input id="text" type="color" value="#2e2013"></label></div>
+        <label for="layout" data-i18n="layoutLabel">چیدمان غذاها</label><select id="layout"><option value="grid" data-i18n="grid">شبکه‌ای</option><option value="list" data-i18n="list">لیستی</option><option value="magazine" data-i18n="magazine">مجله‌ای</option><option value="compact" data-i18n="compact">فشرده</option></select>
+        <label for="columns"><span data-i18n="columnsLabel">ستون‌ها در نمایش عریض</span> <output for="columns" id="columns-value">2</output></label><input id="columns" type="range" min="1" max="4" value="2">
+        <label for="radius"><span data-i18n="radiusLabel">گردی کارت‌ها</span> <output for="radius" id="radius-value">14</output></label><input id="radius" type="range" min="0" max="40" value="14">
+        <hr><h3 data-i18n="reorderTitle">🖐️ منو را خودتان بچینید</h3><p class="hint" data-i18n="reorderHint">دسته‌ها را بکشید و رها کنید، یا از دکمه‌های بالا و پایین استفاده کنید.</p><ol id="category-order"></ol>
+        <button class="reset" id="reset" type="button" data-i18n="reset">↺ بازگشت به قالب اولیه</button><p id="status" class="status" role="status" aria-live="polite"></p>
+      </aside>
+      <div class="preview-area"><div class="preview-toolbar"><span class="live-label"><i></i><span data-i18n="live">پیش‌نمایش زنده</span></span><div class="device-buttons"><button type="button" data-device="wide" aria-pressed="true" data-i18n="wide">🖥️ عریض</button><button type="button" data-device="phone" aria-pressed="false" data-i18n="phone">📱 موبایل</button><a id="open-menu" href="menus/saffron/fa.html" target="_blank" rel="noopener" data-i18n="openMenu">↗ خود منو</a></div></div><div id="preview-stage"><iframe id="preview" title="پیش‌نمایش منوی رستوران" src="menus/saffron/fa.html"></iframe></div></div>
+    </div>
+    <p class="scope-note" data-i18n="scope">🧪 این دمو قالب، رنگ، چیدمان و ترتیب دسته‌ها را نشان می‌دهد. پنل حساب‌ها، ویرایش غذا، بارگذاری تصویر و طراح آزاد بوم در نسخهٔ کامل Go هستند؛ این صفحه سرور مدیریت ندارد.</p>
+  </section>
+  <section class="features"><div class="section-title"><div><p class="eyebrow" data-i18n="fullEyebrow">🚀 وقتی نسخهٔ کامل را نصب کنید</p><h2 data-i18n="fullTitle">از یک منوی ساده، خیلی بیشتر.</h2></div></div><div class="feature-grid">
+    <article><span>🖐️</span><h3 data-i18n="f1title">طراحی با کشیدن و رهاکردن</h3><p data-i18n="f1">ترتیب بخش‌های صفحه را عوض کنید و در بوم آزاد، متن، تصویر، قیمت و دکمه را هرجا خواستید قرار دهید.</p></article>
+    <article><span>🎨</span><h3 data-i18n="f2title">رنگ، قلم و قالب دلخواه</h3><p data-i18n="f2">۱۱۴ قالب آماده؛ پالت مستقل روشن و تاریک، پس‌زمینه، اندازه‌ها، کارت‌ها و حتی سبک اختصاصی.</p></article>
+    <article><span>🍲</span><h3 data-i18n="f3title">منوی واقعی، مدیریت ساده</h3><p data-i18n="f3">غذا، دسته، تخفیف، موجودی، کالری، زمان آماده‌سازی و ۵۴ منوی آماده برای شروع سریع.</p></article>
+    <article><span>🔎</span><h3 data-i18n="f4title">تجربهٔ راحت مشتری</h3><p data-i18n="f4">جست‌وجوی دوزبانه، فیلتر غذایی، علاقه‌مندی، مرتب‌سازی قیمت، اشتراک‌گذاری و چاپ.</p></article>
+    <article><span>📱</span><h3 data-i18n="f5title">یک لینک، روی هر دستگاه</h3><p data-i18n="f5">منوی واکنش‌گرا با کد QR، ساعات کاری، اطلاعات تماس و نمایش درست فارسی و انگلیسی.</p></article>
+    <article><span>🧩</span><h3 data-i18n="f6title">آماده برای سایت شما</h3><p data-i18n="f6">نسخهٔ ویندوز و لینوکس، افزونهٔ وردپرس و انتقال محتوای منو با فایل‌های JSON و CSV.</p></article>
+  </div></section>
+</main>
+<footer><b dir="ltr">MenuCraft</b><p data-i18n="footer">با سلیقهٔ خودتان بسازید. روی سرور خودتان منتشر کنید.</p><a href="https://github.com/unknown-killer/MenuCraft" data-i18n="docs">📚 امکانات و راهنمای کامل</a></footer>
+<noscript><p class="scope-note">برای استودیوی تعاملی جاوااسکریپت را فعال کنید. <a href="menus/saffron/fa.html">مشاهدهٔ منوی نمونه</a> · <a href="menus/saffron/en.html">English sample menu</a></p></noscript>
+<script src="studio.js" defer></script>
+</body></html>

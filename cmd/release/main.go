@@ -75,7 +75,7 @@ func build(version, output string) error {
 				return err
 			}
 		}
-		for _, file := range []string{"README.md", "README.fa.md", "CHANGELOG.md", "docs/DEPLOYMENT.md", "docs/WORDPRESS.md", "docs/THIRD_PARTY_NOTICES.md", "docs/ARCHITECTURE.md", "docs/VERIFICATION.md", "docs/screenshots/menu-fa.jpg"} {
+		for _, file := range []string{"README.md", "README.fa.md", "README.en.md", "CHANGELOG.md", "docs/DEPLOYMENT.md", "docs/WORDPRESS.md", "docs/THIRD_PARTY_NOTICES.md", "docs/ARCHITECTURE.md", "docs/VERIFICATION.md", "docs/screenshots/menu-fa.jpg"} {
 			if err := copyFile(file, filepath.Join(dir, file)); err != nil {
 				return err
 			}
