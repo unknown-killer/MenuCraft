@@ -25,3 +25,4 @@ dist/
 *.log
 .env
 coverage.out
+_site/
