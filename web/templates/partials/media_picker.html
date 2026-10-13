@@ -1,0 +1,28 @@
+{{/*
+  Shared image picker. Opened by any [data-pick-image="<field>"] button; on
+  choose it writes the path into that hidden input and updates its preview.
+*/}}
+{{ define "media_picker" }}
+<dialog class="picker" data-picker>
+  <form method="dialog" class="picker-head">
+    <strong>{{ .T "media.pick" }}</strong>
+    <button class="picker-x" value="cancel" aria-label="{{ .T "act.close" }}">×</button>
+  </form>
+
+  <div class="picker-upload">
+    <label class="drop" data-drop>
+      <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden data-drop-input>
+      <span class="drop-ico">⬆</span>
+      <span class="drop-text">{{ .T "media.drop_hint" }}</span>
+      <small>{{ .T "media.formats" }}</small>
+    </label>
+    <div class="drop-progress" data-drop-progress hidden>{{ .T "media.uploading" }}</div>
+  </div>
+
+  <div class="picker-grid" data-picker-grid>
+    <p class="muted picker-empty" data-picker-empty>{{ .T "media.empty" }}</p>
+  </div>
+
+  <input type="hidden" data-picker-csrf value="{{ .CSRF }}">
+</dialog>
+{{ end }}

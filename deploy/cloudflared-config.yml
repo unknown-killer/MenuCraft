@@ -1,0 +1,19 @@
+# Cloudflare Tunnel configuration.
+#
+# Copy to ~/.cloudflared/config.yml (Windows: %USERPROFILE%\.cloudflared\config.yml)
+# and replace <TUNNEL-ID> and the hostname with your own.
+
+tunnel: <TUNNEL-ID>
+credentials-file: /root/.cloudflared/<TUNNEL-ID>.json
+
+ingress:
+  - hostname: menu.yourdomain.com
+    service: http://localhost:8080
+    originRequest:
+      # Also set MENU_PUBLIC_URL=https://menu.yourdomain.com on MenuCraft.
+      # Forwarded request headers do not determine the canonical public URL.
+      httpHostHeader: menu.yourdomain.com
+      connectTimeout: 30s
+
+  # Every tunnel needs a catch-all rule as its last entry.
+  - service: http_status:404

@@ -1,0 +1,26 @@
+# Build artefacts and local state — never ship these into the image.
+menu.exe
+menu
+*.exe
+data/
+uploads/
+
+# The image builds its own binaries from source.
+/out/
+
+.git/
+.gitignore
+.idea/
+.vscode/
+.qa/
+.tools/
+dist/
+.env
+*.log
+docs/screenshots/
+
+# Docs and local tooling add nothing to the runtime image.
+README.md
+run.bat
+*.md
+!deploy/*.md

@@ -1,0 +1,49 @@
+# Run on any VPS with Docker. Includes an optional Cloudflare Tunnel sidecar
+# so the box needs no open ports and no TLS certificate of its own.
+#
+#   docker compose -f deploy/docker-compose.yml up -d --build
+
+services:
+  menu:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      MENU_ENV: production
+      MENU_ADDR: ":8080"
+      MENU_DB: /data/db/menu.db
+      MENU_UPLOADS: /data/uploads
+      MENU_LOCALE: fa
+      TZ: Asia/Tehran
+      MENU_SEED_DEMO: "0"
+      MENU_PUBLIC_URL: "${MENU_PUBLIC_URL:-}"
+      MENU_EMBED_ORIGINS: "${MENU_EMBED_ORIGINS:-}"
+      MENU_DISABLE_REGISTRATION: "${MENU_DISABLE_REGISTRATION:-false}"
+    volumes:
+      # Everything that must survive a redeploy: the database, the uploaded
+      # images, and the session signing key.
+      - menu_data:/data
+    # Loopback only; put an HTTPS reverse proxy or tunnel in front.
+    ports:
+      - "127.0.0.1:8080:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # Optional: publish through Cloudflare without opening a port.
+  # Create the tunnel in the Cloudflare dashboard, then put its token here.
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: "${CLOUDFLARE_TUNNEL_TOKEN}"
+    depends_on:
+      - menu
+    profiles: ["tunnel"]
+
+volumes:
+  menu_data:

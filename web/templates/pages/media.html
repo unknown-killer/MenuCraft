@@ -1,0 +1,45 @@
+{{ define "content" }}
+<header class="page-head">
+  <div>
+    <h1>{{ .T "media.title" }}</h1>
+    <p class="muted">{{ .T "media.subtitle" }}</p>
+  </div>
+</header>
+
+<section class="card">
+  <form method="post" action="/panel/media/upload" enctype="multipart/form-data" class="upload-form">
+    <input type="hidden" name="csrf_token" value="{{ .CSRF }}">
+    <label class="drop">
+      <input type="file" name="file" accept="image/jpeg,image/png,image/webp,image/gif" required
+             data-auto-submit>
+      <span class="drop-ico">⬆</span>
+      <span class="drop-text">{{ .T "media.drop_hint" }}</span>
+      <small>{{ .T "media.formats" }}</small>
+    </label>
+    <button type="submit" class="btn btn-primary">{{ .T "media.upload" }}</button>
+  </form>
+</section>
+
+{{ if .Page.Items }}
+  <div class="media-grid">
+    {{ range .Page.Items }}
+      <figure class="media-cell">
+        <img src="{{ .Path }}" alt="{{ .OriginalName }}" loading="lazy">
+        <figcaption>
+          <span class="media-name" title="{{ .OriginalName }}">{{ .OriginalName }}</span>
+          <form method="post" action="/panel/media/{{ .ID }}/delete"
+                data-confirm="{{ $.T "media.delete_ask" }}">
+            <input type="hidden" name="csrf_token" value="{{ $.CSRF }}">
+            <button type="submit" class="btn btn-danger btn-sm">{{ $.T "act.delete" }}</button>
+          </form>
+        </figcaption>
+      </figure>
+    {{ end }}
+  </div>
+{{ else }}
+  <section class="card empty-state">
+    <div class="empty-ico">▣</div>
+    <h2>{{ .T "media.empty" }}</h2>
+  </section>
+{{ end }}
+{{ end }}

@@ -1,0 +1,18 @@
+# Keep LF in the repository for everything, so a clone on Windows does not
+# hand CRLF files to a Linux container build.
+* text=auto eol=lf
+
+# Files that must be LF wherever they end up — a CRLF shebang or config breaks
+# at runtime, not at build time, which makes it an annoying failure to trace.
+*.sh      text eol=lf
+Dockerfile text eol=lf
+*.yml     text eol=lf
+*.yaml    text eol=lf
+*.toml    text eol=lf
+
+# Binary assets: never touch these.
+*.png binary
+*.jpg binary
+*.webp binary
+*.gif binary
+*.db  binary

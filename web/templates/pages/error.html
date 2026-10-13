@@ -1,0 +1,22 @@
+{{ define "content" }}
+<div class="auth-card auth-card-center">
+  {{ $status := 500 }}
+  {{ with .Page }}{{ with index . "Status" }}{{ $status = . }}{{ end }}{{ end }}
+
+  <div class="err-code">{{ .N $status }}</div>
+
+  {{ if eq $status 404 }}
+    <h1>{{ .T "err.404_title" }}</h1>
+    <p class="muted">{{ .T "err.404_body" }}</p>
+  {{ else }}
+    <h1>{{ .T "err.500_title" }}</h1>
+    <p class="muted">{{ .T "err.500_body" }}</p>
+  {{ end }}
+
+  {{ with .Page }}{{ with index . "Message" }}
+    <p class="muted">{{ . }}</p>
+  {{ end }}{{ end }}
+
+  <a class="btn btn-primary btn-block" href="/">{{ .T "nav.home" }}</a>
+</div>
+{{ end }}

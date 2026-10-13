@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="{{ .Locale.HTML }}" dir="{{ .Locale.Dir }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <title>{{ .Title }} · {{ .T "app.name" }}</title>
+  <link rel="icon" href="/static/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ .Asset "css/panel.css" }}">
+  <link rel="stylesheet" href="{{ .Asset "css/designer.css" }}">
+  <link rel="stylesheet" href="{{ .Asset "css/canvas.css" }}">
+  <link rel="stylesheet" href="{{ .Asset "css/canvas-editor.css" }}">
+  <link rel="stylesheet" href="{{ .Asset "css/gallery.css" }}">
+</head>
+<body class="panel {{ if .IsRTL }}is-rtl{{ else }}is-ltr{{ end }}">
+
+<a class="skip-link" href="#main">{{ .T "nav.dashboard" }}</a>
+
+<button class="nav-toggle" type="button" aria-label="{{ .T "nav.dashboard" }}" data-nav-toggle>
+  <span></span><span></span><span></span>
+</button>
+
+<div class="shell">
+  <aside class="sidebar" data-sidebar>
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">🍽</div>
+      <div class="brand-text">
+        <strong>{{ .T "app.name" }}</strong>
+        <span>{{ if .Restaurant }}{{ .Restaurant.Name .Lang }}{{ else }}{{ .T "app.tagline" }}{{ end }}</span>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <a href="/panel/" class="nav-item {{ if eq .Path "/panel/" }}is-active{{ end }}">
+        <span class="nav-ico">◈</span>{{ .T "nav.dashboard" }}
+      </a>
+      <a href="/panel/menu" class="nav-item {{ if .Active "/panel/menu" }}is-active{{ end }}">
+        <span class="nav-ico">☰</span>{{ .T "nav.menu" }}
+      </a>
+      <a href="/panel/gallery" class="nav-item {{ if .Active "/panel/gallery" }}is-active{{ end }}">
+        <span class="nav-ico">✦</span>{{ .T "gal.title" }}
+      </a>
+      <a href="/panel/theme" class="nav-item {{ if .Active "/panel/theme" }}is-active{{ end }}">
+        <span class="nav-ico">◐</span>{{ .T "nav.theme" }}
+      </a>
+      <a href="/panel/design" class="nav-item {{ if .Active "/panel/design" }}is-active{{ end }}">
+        <span class="nav-ico">▤</span>{{ .T "design.title" }}
+      </a>
+      <a href="/panel/media" class="nav-item {{ if .Active "/panel/media" }}is-active{{ end }}">
+        <span class="nav-ico">▣</span>{{ .T "nav.media" }}
+      </a>
+      <a href="/panel/transfer" class="nav-item {{ if .Active "/panel/transfer" }}is-active{{ end }}">
+        <span class="nav-ico">⇄</span>{{ .T "transfer.title" }}
+      </a>
+      <a href="/panel/settings" class="nav-item {{ if .Active "/panel/settings" }}is-active{{ end }}">
+        <span class="nav-ico">⚙</span>{{ .T "nav.settings" }}
+      </a>
+    </nav>
+
+    <div class="sidebar-foot">
+      {{ if .Restaurant }}
+        <a class="btn btn-ghost btn-block" href="/m/{{ .Restaurant.Slug }}" target="_blank" rel="noopener">
+          ↗ {{ .T "nav.preview" }}
+        </a>
+      {{ end }}
+
+      <div class="lang-switch" role="group">
+        {{ $cur := .Lang }}
+        {{ range locales }}
+          <a href="/lang/{{ .Code }}" class="{{ if eq .Code $cur }}is-active{{ end }}">{{ .Name }}</a>
+        {{ end }}
+      </div>
+
+      <form method="post" action="/logout" class="logout-form">
+        <input type="hidden" name="csrf_token" value="{{ $.CSRF }}">
+        <button type="submit" class="btn btn-quiet btn-block">{{ .T "nav.logout" }}</button>
+      </form>
+    </div>
+  </aside>
+
+  <div class="sidebar-scrim" data-nav-close hidden></div>
+
+  <main id="main" class="content">
+    {{ if .Flash }}
+      <div class="flash flash-{{ .Flash.Kind }}" role="status">
+        <span>{{ .Flash.Text }}</span>
+        <button type="button" class="flash-x" data-dismiss aria-label="{{ .T "act.close" }}">×</button>
+      </div>
+    {{ end }}
+
+    {{ template "content" . }}
+  </main>
+</div>
+
+<div class="toast-host" data-toasts aria-live="polite"></div>
+
+<script src="{{ .Asset "js/panel.js" }}" defer></script>
+{{ block "scripts" . }}{{ end }}
+</body>
+</html>

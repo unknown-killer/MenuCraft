@@ -1,0 +1,27 @@
+# Compiled binaries
+menu
+menu.exe
+*.exe
+*.test
+
+# Runtime state — never commit these. data/.secret is the session signing key
+# and data/menu.db holds real venue data.
+data/
+uploads/
+
+# Deployment secrets
+deploy/.env
+fly.toml
+
+# Editors
+.idea/
+.vscode/
+*.swp
+
+# Release outputs, local verification and downloaded developer tools
+dist/
+.tools/
+.qa/
+*.log
+.env
+coverage.out

@@ -1,0 +1,383 @@
+{{ define "content" }}
+{{ $c := .Page.Config }}
+
+<div class="editor" data-editor>
+
+  <div class="editor-controls">
+    <header class="page-head page-head-tight">
+      <div>
+        <h1>{{ .T "theme.title" }}</h1>
+        <p class="muted">{{ .T "theme.subtitle" }}</p>
+      </div>
+    </header>
+
+    <form method="post" action="/panel/theme" id="theme-form" data-theme-form>
+      <input type="hidden" name="csrf_token" value="{{ .CSRF }}">
+      {{/* Tells the parser that unchecked boxes are meaningful, not missing. */}}
+      <input type="hidden" name="checkboxes_present" value="1">
+      <input type="hidden" name="preset" value="{{ .Page.Preset }}" data-preset-field>
+      <input type="hidden" name="preview_locale" value="{{ .Lang }}">
+
+      <!-- ================= presets ================= -->
+      <details class="sect" open>
+        <summary><span class="sect-ico">✨</span>{{ .T "theme.presets" }}</summary>
+        <div class="sect-body">
+          <div class="preset-grid">
+            {{ $cur := .Page.Preset }}
+            {{ range .Page.Presets }}
+              <button type="button" class="preset {{ if eq $cur .Key }}is-active{{ end }}"
+                      data-preset="{{ .Key }}" title="{{ if $.IsRTL }}{{ .NoteFa }}{{ else }}{{ .NoteEn }}{{ end }}">
+                <span class="preset-strip">
+                  {{ range .Swatch }}<i style="background:{{ . }}"></i>{{ end }}
+                </span>
+                <strong>{{ if $.IsRTL }}{{ .LabelFa }}{{ else }}{{ .LabelEn }}{{ end }}</strong>
+                <small>{{ if $.IsRTL }}{{ .NoteFa }}{{ else }}{{ .NoteEn }}{{ end }}</small>
+              </button>
+            {{ end }}
+          </div>
+        </div>
+      </details>
+
+      <!-- ================= light / dark mode ================= -->
+      <details class="sect">
+        <summary><span class="sect-ico">🌗</span>{{ .T "mode.title" }}</summary>
+        <div class="sect-body">
+          {{ template "ctl_seg" dict "name" "mode" "label" (.T "mode.which") "value" $c.Mode "options" (list
+              (dict "k" "light" "l" (.T "mode.light"))
+              (dict "k" "dark"  "l" (.T "mode.dark"))
+              (dict "k" "auto"  "l" (.T "mode.auto"))) }}
+          <p class="hint">{{ .T "mode.hint" }}</p>
+
+          <h3 class="mini-title">{{ .T "mode.dark_palette" }}</h3>
+          <p class="hint">{{ .T "mode.derive_hint" }}</p>
+          <div class="row-actions">
+            <button type="submit" name="derive" value="dark" class="btn btn-quiet btn-sm">{{ .T "mode.derive_dark" }}</button>
+            <button type="submit" name="derive" value="light" class="btn btn-quiet btn-sm">{{ .T "mode.derive_light" }}</button>
+          </div>
+
+          <div class="grid-2">
+            {{ template "ctl_color" dict "name" "dc_primary"    "label" (.T "theme.c.primary")    "value" $c.DarkColors.Primary }}
+            {{ template "ctl_color" dict "name" "dc_secondary"  "label" (.T "theme.c.secondary")  "value" $c.DarkColors.Secondary }}
+            {{ template "ctl_color" dict "name" "dc_accent"     "label" (.T "theme.c.accent")     "value" $c.DarkColors.Accent }}
+            {{ template "ctl_color" dict "name" "dc_background" "label" (.T "theme.c.background") "value" $c.DarkColors.Background }}
+            {{ template "ctl_color" dict "name" "dc_surface"    "label" (.T "theme.c.surface")    "value" $c.DarkColors.Surface }}
+            {{ template "ctl_color" dict "name" "dc_surfaceAlt" "label" (.T "theme.c.surfaceAlt") "value" $c.DarkColors.SurfaceAlt }}
+            {{ template "ctl_color" dict "name" "dc_text"       "label" (.T "theme.c.text")       "value" $c.DarkColors.Text }}
+            {{ template "ctl_color" dict "name" "dc_textMuted"  "label" (.T "theme.c.textMuted")  "value" $c.DarkColors.TextMuted }}
+            {{ template "ctl_color" dict "name" "dc_border"     "label" (.T "theme.c.border")     "value" $c.DarkColors.Border }}
+            {{ template "ctl_color" dict "name" "dc_price"      "label" (.T "theme.c.price")      "value" $c.DarkColors.Price }}
+            {{ template "ctl_color" dict "name" "dc_badge"      "label" (.T "theme.c.badge")      "value" $c.DarkColors.Badge }}
+          </div>
+        </div>
+      </details>
+
+      <!-- ================= colours ================= -->
+      <details class="sect">
+        <summary><span class="sect-ico">🎨</span>{{ .T "theme.colors" }}</summary>
+        <div class="sect-body grid-2">
+          {{ template "ctl_color" dict "name" "c_primary"    "label" (.T "theme.c.primary")    "value" $c.Colors.Primary }}
+          {{ template "ctl_color" dict "name" "c_secondary"  "label" (.T "theme.c.secondary")  "value" $c.Colors.Secondary }}
+          {{ template "ctl_color" dict "name" "c_accent"     "label" (.T "theme.c.accent")     "value" $c.Colors.Accent }}
+          {{ template "ctl_color" dict "name" "c_background" "label" (.T "theme.c.background") "value" $c.Colors.Background }}
+          {{ template "ctl_color" dict "name" "c_surface"    "label" (.T "theme.c.surface")    "value" $c.Colors.Surface }}
+          {{ template "ctl_color" dict "name" "c_surfaceAlt" "label" (.T "theme.c.surfaceAlt") "value" $c.Colors.SurfaceAlt }}
+          {{ template "ctl_color" dict "name" "c_text"       "label" (.T "theme.c.text")       "value" $c.Colors.Text }}
+          {{ template "ctl_color" dict "name" "c_textMuted"  "label" (.T "theme.c.textMuted")  "value" $c.Colors.TextMuted }}
+          {{ template "ctl_color" dict "name" "c_border"     "label" (.T "theme.c.border")     "value" $c.Colors.Border }}
+          {{ template "ctl_color" dict "name" "c_price"      "label" (.T "theme.c.price")      "value" $c.Colors.Price }}
+          {{ template "ctl_color" dict "name" "c_badge"      "label" (.T "theme.c.badge")      "value" $c.Colors.Badge }}
+        </div>
+      </details>
+
+      <!-- ================= typography ================= -->
+      <details class="sect">
+        <summary><span class="sect-ico">🔤</span>{{ .T "theme.typography" }}</summary>
+        <div class="sect-body">
+          <div class="grid-2">
+            <div class="ctl">
+              <label class="ctl-label" for="f_t_fontFa">{{ .T "theme.t.fontFa" }}</label>
+              <select id="f_t_fontFa" name="t_fontFa" class="input">
+                {{ $f := $c.Typography.FontFa }}
+                {{ range faFonts }}
+                  <option value="{{ .Key }}" {{ if eq $f .Key }}selected{{ end }}>{{ if $.IsRTL }}{{ .LabelFa }}{{ else }}{{ .LabelEn }}{{ end }}</option>
+                {{ end }}
+              </select>
+            </div>
+            <div class="ctl">
+              <label class="ctl-label" for="f_t_fontEn">{{ .T "theme.t.fontEn" }}</label>
+              <select id="f_t_fontEn" name="t_fontEn" class="input">
+                {{ $f := $c.Typography.FontEn }}
+                {{ range enFonts }}
+                  <option value="{{ .Key }}" {{ if eq $f .Key }}selected{{ end }}>{{ if $.IsRTL }}{{ .LabelFa }}{{ else }}{{ .LabelEn }}{{ end }}</option>
+                {{ end }}
+              </select>
+            </div>
+          </div>
+
+          {{ template "ctl_range" dict "name" "t_baseSize"      "label" (.T "theme.t.baseSize")      "value" $c.Typography.BaseSize      "min" 12 "max" 22  "step" 1    "unit" "px" }}
+          {{ template "ctl_range" dict "name" "t_headingScale"  "label" (.T "theme.t.headingScale")  "value" $c.Typography.HeadingScale  "min" 1.05 "max" 1.6 "step" 0.01 "unit" "" }}
+          {{ template "ctl_range" dict "name" "t_headingWeight" "label" (.T "theme.t.headingWeight") "value" $c.Typography.HeadingWeight "min" 400 "max" 900 "step" 50   "unit" "" }}
+          {{ template "ctl_range" dict "name" "t_bodyWeight"    "label" (.T "theme.t.bodyWeight")    "value" $c.Typography.BodyWeight    "min" 300 "max" 600 "step" 50   "unit" "" }}
+          {{ template "ctl_range" dict "name" "t_lineHeight"    "label" (.T "theme.t.lineHeight")    "value" $c.Typography.LineHeight    "min" 1.2 "max" 2.2 "step" 0.05 "unit" "" }}
+          {{ template "ctl_range" dict "name" "t_letterSpacing" "label" (.T "theme.t.letterSpacing") "value" $c.Typography.LetterSpacing "min" -1 "max" 3   "step" 0.1  "unit" "px" }}
+        </div>
+      </details>
+
+      <!-- ================= background ================= -->
+      <details class="sect">
+        <summary><span class="sect-ico">🌄</span>{{ .T "theme.background" }}</summary>
+        <div class="sect-body">
+          {{ template "ctl_seg" dict "name" "b_type" "label" (.T "theme.b.type") "value" $c.Background.Type "options" (list
+              (dict "k" "solid"    "l" (.T "theme.b.solid"))
+              (dict "k" "gradient" "l" (.T "theme.b.gradient"))
+              (dict "k" "image"    "l" (.T "theme.b.image"))
+              (dict "k" "pattern"  "l" (.T "theme.b.pattern"))) }}
+
+          <div data-bg-when="solid pattern">
+            {{ template "ctl_color" dict "name" "b_color" "label" (.T "theme.b.color") "value" $c.Background.Color }}
+          </div>
+
+          <div data-bg-when="gradient">
+            <div class="grid-3">
+              {{ template "ctl_color" dict "name" "b_gradientFrom" "label" (.T "theme.b.gradientFrom") "value" $c.Background.GradientFrom }}
+              {{ template "ctl_color" dict "name" "b_gradientVia"  "label" (.T "theme.b.gradientVia")  "value" $c.Background.GradientVia }}
+              {{ template "ctl_color" dict "name" "b_gradientTo"   "label" (.T "theme.b.gradientTo")   "value" $c.Background.GradientTo }}
+            </div>
+            {{ template "ctl_range" dict "name" "b_gradientDeg" "label" (.T "theme.b.gradientDeg") "value" $c.Background.GradientDeg "min" 0 "max" 360 "step" 5 "unit" "°" }}
+          </div>
+
+          <div data-bg-when="image">
+            <div class="ctl">
+              <span class="ctl-label">{{ .T "theme.b.image_pick" }}</span>
+              <div class="img-pick">
+                <div class="img-pick-preview {{ if not $c.Background.ImagePath }}is-empty{{ end }}" data-img-preview="b_imagePath">
+                  {{ if $c.Background.ImagePath }}<img src="{{ $c.Background.ImagePath }}" alt="">{{ end }}
+                </div>
+                <div class="img-pick-actions">
+                  <button type="button" class="btn btn-quiet btn-sm" data-pick-image="b_imagePath">{{ .T "media.pick" }}</button>
+                  <button type="button" class="btn btn-quiet btn-sm" data-clear-image="b_imagePath">{{ .T "theme.b.remove" }}</button>
+                </div>
+                <input type="hidden" name="b_imagePath" value="{{ $c.Background.ImagePath }}">
+              </div>
+            </div>
+            {{ template "ctl_range" dict "name" "b_imageOverlay" "label" (.T "theme.b.overlay") "value" $c.Background.ImageOverlay "min" 0 "max" 1 "step" 0.05 "unit" "" }}
+            {{ template "ctl_range" dict "name" "b_imageBlur"    "label" (.T "theme.b.blur")    "value" $c.Background.ImageBlur    "min" 0 "max" 30 "step" 1 "unit" "px" }}
+          </div>
+
+          <div data-bg-when="pattern">
+            {{ template "ctl_select" dict "name" "b_pattern" "label" (.T "theme.b.pattern_kind") "value" $c.Background.Pattern "options" (list
+                (dict "k" "none"       "l" (.T "pattern.none"))
+                (dict "k" "dots"       "l" (.T "pattern.dots"))
+                (dict "k" "grid"       "l" (.T "pattern.grid"))
+                (dict "k" "diagonal"   "l" (.T "pattern.diagonal"))
+                (dict "k" "crosshatch" "l" (.T "pattern.crosshatch"))) }}
+            {{ template "ctl_range" dict "name" "b_patternOpacity" "label" (.T "theme.b.opacity") "value" $c.Background.PatternOpac "min" 0 "max" 0.5 "step" 0.01 "unit" "" }}
+          </div>
+
+          <div data-bg-when="image pattern gradient">
+            {{ template "ctl_seg" dict "name" "b_attachment" "label" (.T "theme.b.attachment") "value" $c.Background.Attachment "options" (list
+                (dict "k" "fixed"  "l" (.T "theme.b.fixed"))
+                (dict "k" "scroll" "l" (.T "theme.b.scroll"))) }}
+          </div>
+        </div>
+      </details>
+
+      <!-- ================= layout ================= -->
+      <details class="sect">
+        <summary><span class="sect-ico">▦</span>{{ .T "theme.layout" }}</summary>
+        <div class="sect-body">
+          {{ template "ctl_seg" dict "name" "l_mode" "label" (.T "theme.l.mode") "value" $c.Layout.Mode "options" (list
+              (dict "k" "grid"     "l" (.T "theme.l.grid"))
+              (dict "k" "list"     "l" (.T "theme.l.list"))
+              (dict "k" "magazine" "l" (.T "theme.l.magazine"))
+              (dict "k" "compact"  "l" (.T "theme.l.compact"))) }}
+
+          {{ template "ctl_range" dict "name" "l_columns"  "label" (.T "theme.l.columns")  "value" $c.Layout.Columns  "min" 1 "max" 4 "step" 1 "unit" "" }}
+          {{ template "ctl_range" dict "name" "l_gap"      "label" (.T "theme.l.gap")      "value" $c.Layout.Gap      "min" 4 "max" 48 "step" 2 "unit" "px" }}
+          {{ template "ctl_range" dict "name" "l_maxWidth" "label" (.T "theme.l.maxWidth") "value" $c.Layout.MaxWidth "min" 600 "max" 1600 "step" 20 "unit" "px" }}
+
+          {{ template "ctl_seg" dict "name" "l_density" "label" (.T "theme.l.density") "value" $c.Layout.Density "options" (list
+              (dict "k" "compact" "l" (.T "theme.l.compactD"))
+              (dict "k" "normal"  "l" (.T "theme.l.normal"))
+              (dict "k" "relaxed" "l" (.T "theme.l.relaxed"))) }}
+
+          {{ template "ctl_select" dict "name" "l_categoryNav" "label" (.T "theme.l.categoryNav") "value" $c.Layout.CategoryNav "options" (list
+              (dict "k" "pills"    "l" (.T "theme.l.pills"))
+              (dict "k" "tabs"     "l" (.T "theme.l.tabs"))
+              (dict "k" "sidebar"  "l" (.T "theme.l.sidebar"))
+              (dict "k" "dropdown" "l" (.T "theme.l.dropdown"))
+              (dict "k" "none"     "l" (.T "theme.l.none"))) }}
+
+          {{ template "ctl_toggle" dict "name" "l_stickyNav" "label" (.T "theme.l.stickyNav") "checked" $c.Layout.StickyNav }}
+        </div>
+      </details>
+
+      <!-- ================= cards ================= -->
+      <details class="sect">
+        <summary><span class="sect-ico">🃏</span>{{ .T "theme.cards" }}</summary>
+        <div class="sect-body">
+          {{ template "ctl_seg" dict "name" "card_style" "label" (.T "theme.card.style") "value" $c.Cards.Style "options" (list
+              (dict "k" "elevated" "l" (.T "theme.card.elevated"))
+              (dict "k" "flat"     "l" (.T "theme.card.flat"))
+              (dict "k" "outline"  "l" (.T "theme.card.outline"))
+              (dict "k" "glass"    "l" (.T "theme.card.glass"))
+              (dict "k" "gradient" "l" (.T "theme.card.gradient"))) }}
+
+          {{ template "ctl_range" dict "name" "card_radius"      "label" (.T "theme.card.radius")      "value" $c.Cards.Radius      "min" 0 "max" 40 "step" 1 "unit" "px" }}
+          {{ template "ctl_range" dict "name" "card_shadow"      "label" (.T "theme.card.shadow")      "value" $c.Cards.Shadow      "min" 0 "max" 5  "step" 1 "unit" "" }}
+          {{ template "ctl_range" dict "name" "card_borderWidth" "label" (.T "theme.card.borderWidth") "value" $c.Cards.BorderWidth "min" 0 "max" 4  "step" 1 "unit" "px" }}
+
+          {{ template "ctl_select" dict "name" "card_imageRatio" "label" (.T "theme.card.imageRatio") "value" $c.Cards.ImageRatio "options" (list
+              (dict "k" "4:3"    "l" "4:3")
+              (dict "k" "16:9"   "l" "16:9")
+              (dict "k" "square" "l" (.T "theme.card.square"))
+              (dict "k" "3:4"    "l" "3:4")
+              (dict "k" "circle" "l" (.T "theme.card.circle"))) }}
+
+          {{ template "ctl_seg" dict "name" "card_imagePos" "label" (.T "theme.card.imagePos") "value" $c.Cards.ImagePos "options" (list
+              (dict "k" "top"        "l" (.T "theme.card.top"))
+              (dict "k" "side"       "l" (.T "theme.card.side"))
+              (dict "k" "background" "l" (.T "theme.card.bgpos"))
+              (dict "k" "none"       "l" (.T "theme.card.nopic"))) }}
+
+          {{ template "ctl_select" dict "name" "card_hoverEffect" "label" (.T "theme.card.hover") "value" $c.Cards.HoverEffect "options" (list
+              (dict "k" "lift" "l" (.T "theme.card.lift"))
+              (dict "k" "zoom" "l" (.T "theme.card.zoom"))
+              (dict "k" "glow" "l" (.T "theme.card.glow"))
+              (dict "k" "tilt" "l" (.T "theme.card.tilt"))
+              (dict "k" "none" "l" (.T "theme.l.none"))) }}
+        </div>
+      </details>
+
+      <!-- ================= header ================= -->
+      <details class="sect">
+        <summary><span class="sect-ico">🖼</span>{{ .T "theme.header" }}</summary>
+        <div class="sect-body">
+          {{ template "ctl_seg" dict "name" "h_style" "label" (.T "theme.h.style") "value" $c.Header.Style "options" (list
+              (dict "k" "hero"     "l" (.T "theme.h.hero"))
+              (dict "k" "centered" "l" (.T "theme.h.centered"))
+              (dict "k" "split"    "l" (.T "theme.h.split"))
+              (dict "k" "minimal"  "l" (.T "theme.h.minimal"))) }}
+
+          {{ template "ctl_range" dict "name" "h_coverHeight" "label" (.T "theme.h.coverHeight") "value" $c.Header.CoverHeight "min" 120 "max" 600 "step" 10 "unit" "px" }}
+          {{ template "ctl_range" dict "name" "h_logoSize"    "label" (.T "theme.h.logoSize")    "value" $c.Header.LogoSize    "min" 40 "max" 200 "step" 4 "unit" "px" }}
+          {{ template "ctl_range" dict "name" "h_overlay"     "label" (.T "theme.h.overlay")     "value" $c.Header.Overlay     "min" 0 "max" 1 "step" 0.05 "unit" "" }}
+
+          {{ template "ctl_seg" dict "name" "h_logoShape" "label" (.T "theme.h.logoShape") "value" $c.Header.LogoShape "options" (list
+              (dict "k" "circle"  "l" (.T "theme.card.circle"))
+              (dict "k" "rounded" "l" (.T "theme.h.rounded"))
+              (dict "k" "square"  "l" (.T "theme.card.square"))) }}
+
+          {{ template "ctl_toggle" dict "name" "h_showTagline" "label" (.T "theme.h.showTagline") "checked" $c.Header.ShowTagline }}
+        </div>
+      </details>
+
+      <!-- ================= element visibility ================= -->
+      <details class="sect">
+        <summary><span class="sect-ico">👁</span>{{ .T "theme.display" }}</summary>
+        <div class="sect-body toggle-grid">
+          {{ template "ctl_toggle" dict "name" "d_showImages"       "label" (.T "theme.d.showImages")       "checked" $c.Display.ShowImages }}
+          {{ template "ctl_toggle" dict "name" "d_showDescriptions" "label" (.T "theme.d.showDescriptions") "checked" $c.Display.ShowDescriptions }}
+          {{ template "ctl_toggle" dict "name" "d_showPrices"       "label" (.T "theme.d.showPrices")       "checked" $c.Display.ShowPrices }}
+          {{ template "ctl_toggle" dict "name" "d_showCategoryIcon" "label" (.T "theme.d.showCategoryIcon") "checked" $c.Display.ShowCategoryIcon }}
+          {{ template "ctl_toggle" dict "name" "d_showSearch"       "label" (.T "theme.d.showSearch")       "checked" $c.Display.ShowSearch }}
+          {{ template "ctl_toggle" dict "name" "d_showTags"         "label" (.T "theme.d.showTags")         "checked" $c.Display.ShowTags }}
+          {{ template "ctl_toggle" dict "name" "d_showCalories"     "label" (.T "theme.d.showCalories")     "checked" $c.Display.ShowCalories }}
+          {{ template "ctl_toggle" dict "name" "d_showPrepTime"     "label" (.T "theme.d.showPrepTime")     "checked" $c.Display.ShowPrepTime }}
+          {{ template "ctl_toggle" dict "name" "d_showSocial"       "label" (.T "theme.d.showSocial")       "checked" $c.Display.ShowSocial }}
+          {{ template "ctl_toggle" dict "name" "d_showHours"        "label" (.T "theme.d.showHours")        "checked" $c.Display.ShowHours }}
+          {{ template "ctl_toggle" dict "name" "d_showFooter"       "label" (.T "theme.d.showFooter")       "checked" $c.Display.ShowFooter }}
+          {{ template "ctl_toggle" dict "name" "d_showLangSwitch"   "label" (.T "theme.d.showLangSwitch")   "checked" $c.Display.ShowLangSwitch }}
+        </div>
+      </details>
+
+      <!-- ================= effects ================= -->
+      <details class="sect">
+        <summary><span class="sect-ico">⚡</span>{{ .T "theme.effects" }}</summary>
+        <div class="sect-body">
+          {{ template "ctl_seg" dict "name" "e_animSpeed" "label" (.T "theme.e.animSpeed") "value" $c.Effects.AnimSpeed "options" (list
+              (dict "k" "slow"   "l" (.T "theme.e.slow"))
+              (dict "k" "normal" "l" (.T "theme.e.normal"))
+              (dict "k" "fast"   "l" (.T "theme.e.fast"))) }}
+
+          <div class="toggle-grid">
+            {{ template "ctl_toggle" dict "name" "e_animations"   "label" (.T "theme.e.animations")   "checked" $c.Effects.Animations }}
+            {{ template "ctl_toggle" dict "name" "e_glass"        "label" (.T "theme.e.glass")        "checked" $c.Effects.Glass }}
+            {{ template "ctl_toggle" dict "name" "e_grain"        "label" (.T "theme.e.grain")        "checked" $c.Effects.Grain }}
+            {{ template "ctl_toggle" dict "name" "e_roundedBtns"  "label" (.T "theme.e.roundedBtns")  "checked" $c.Effects.RoundedBtns }}
+            {{ template "ctl_toggle" dict "name" "e_smoothScroll" "label" (.T "theme.e.smoothScroll") "checked" $c.Effects.SmoothScroll }}
+            {{ template "ctl_toggle" dict "name" "e_imageZoom"    "label" (.T "theme.e.imageZoom")    "checked" $c.Effects.ImageZoomOnHV }}
+          </div>
+        </div>
+      </details>
+
+      <!-- ================= custom CSS ================= -->
+      <details class="sect">
+        <summary><span class="sect-ico">⌘</span>{{ .T "css.title" }}</summary>
+        <div class="sect-body">
+          <p class="hint">{{ .T "css.hint" }}</p>
+          <details class="css-help">
+            <summary>{{ .T "css.classes" }}</summary>
+            <ul class="css-list">
+              <li><code>.m-header</code> · {{ .T "sect.header" }}</li>
+              <li><code>.m-name</code> · {{ .T "menu.name_fa" }}</li>
+              <li><code>.m-nav-item</code> · {{ .T "sect.nav" }}</li>
+              <li><code>.m-cat-title</code> · {{ .T "menu.categories" }}</li>
+              <li><code>.m-card</code> · {{ .T "theme.cards" }}</li>
+              <li><code>.m-item-name</code> · {{ .T "menu.items" }}</li>
+              <li><code>.m-price</code> · {{ .T "theme.c.price" }}</li>
+              <li><code>.m-foot</code> · {{ .T "sect.footer" }}</li>
+            </ul>
+            <p class="hint">{{ .T "css.vars" }}</p>
+          </details>
+          <textarea name="custom_css" rows="12" dir="ltr" spellcheck="false"
+                    class="code-area" placeholder=".m-card { border-radius: 28px; }">{{ $c.Custom }}</textarea>
+          <p class="hint">{{ .T "css.safety" }}</p>
+        </div>
+      </details>
+
+      <div class="editor-actions">
+        <button type="submit" class="btn btn-primary btn-lg">{{ .T "theme.save" }}</button>
+        <button type="button" class="btn btn-quiet" data-theme-reset
+                data-confirm="{{ .T "theme.reset_ask" }}">{{ .T "theme.reset" }}</button>
+      </div>
+    </form>
+
+    <form method="post" action="/panel/theme/reset" id="theme-reset-form" hidden>
+      <input type="hidden" name="csrf_token" value="{{ .CSRF }}">
+    </form>
+  </div>
+
+  <!-- ================= live preview ================= -->
+  <div class="editor-preview">
+    <div class="preview-bar">
+      <span class="preview-title">{{ .T "theme.preview" }}</span>
+      <div class="seg seg-sm" role="radiogroup" aria-label="{{ .T "theme.device" }}">
+        <label class="seg-opt">
+          <input type="radio" name="device" value="mobile" checked data-device>
+          <span>{{ .T "theme.mobile" }}</span>
+        </label>
+        <label class="seg-opt">
+          <input type="radio" name="device" value="tablet" data-device>
+          <span>{{ .T "theme.tablet" }}</span>
+        </label>
+        <label class="seg-opt">
+          <input type="radio" name="device" value="desktop" data-device>
+          <span>{{ .T "theme.desktop" }}</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="preview-stage" data-stage="mobile">
+      <iframe title="{{ .T "theme.preview" }}" src="/panel/theme/preview" data-preview-frame></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- image picker dialog, shared with the menu editor -->
+{{ template "media_picker" . }}
+{{ end }}
+
+{{ define "scripts" }}
+<script src="{{ .Asset "js/theme-editor.js" }}" defer></script>
+{{ end }}

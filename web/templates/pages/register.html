@@ -1,0 +1,76 @@
+{{ define "content" }}
+<div class="auth-card auth-card-wide">
+  <h1>{{ .T "auth.register.title" }}</h1>
+  <p class="muted">{{ .T "auth.register.subtitle" }}</p>
+
+  {{ with .Page.Error }}
+    <div class="field-error-box" role="alert">{{ . }}</div>
+  {{ end }}
+
+  <form method="post" action="/register" class="stack" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ .CSRF }}">
+
+    <div class="grid-2">
+      <label class="field">
+        <span class="field-label">{{ .T "auth.username" }}</span>
+        <input type="text" name="username" required autocomplete="username" dir="ltr" autofocus
+               value="{{ index .Page.Values "username" }}">
+      </label>
+
+      <label class="field">
+        <span class="field-label">{{ .T "auth.email" }}</span>
+        <input type="email" name="email" required autocomplete="email" dir="ltr"
+               value="{{ index .Page.Values "email" }}">
+      </label>
+    </div>
+
+    <div class="grid-2">
+      <label class="field">
+        <span class="field-label">{{ .T "auth.display_name" }} <em>{{ .T "act.optional" }}</em></span>
+        <input type="text" name="display_name" autocomplete="name"
+               value="{{ index .Page.Values "display_name" }}">
+      </label>
+
+      <label class="field">
+        <span class="field-label">{{ .T "auth.restaurant_name" }}</span>
+        <input type="text" name="restaurant_name" required
+               value="{{ index .Page.Values "restaurant_name" }}">
+      </label>
+    </div>
+
+    <div class="field">
+      <span class="field-label">{{ .T "auth.business_type" }}</span>
+      <div class="chip-grid">
+        {{ $sel := index .Page.Values "business_type" }}
+        {{ range $i, $b := .Page.BusinessTypes }}
+          <label class="chip">
+            <input type="radio" name="business_type" value="{{ $b }}"
+                   {{ if or (eq $sel $b) (and (eq $sel "") (eq $i 0)) }}checked{{ end }}>
+            <span>{{ $.T (printf "biz.%s" $b) }}</span>
+          </label>
+        {{ end }}
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <label class="field">
+        <span class="field-label">{{ .T "auth.password" }}</span>
+        <input type="password" name="password" required autocomplete="new-password">
+        <small class="hint">{{ .T "auth.password_hint" }}</small>
+      </label>
+
+      <label class="field">
+        <span class="field-label">{{ .T "auth.password_confirm" }}</span>
+        <input type="password" name="password_confirm" required autocomplete="new-password">
+      </label>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-block btn-lg">{{ .T "auth.submit_register" }}</button>
+  </form>
+
+  <p class="auth-alt">
+    {{ .T "auth.have_account" }}
+    <a href="/login">{{ .T "nav.login" }}</a>
+  </p>
+</div>
+{{ end }}

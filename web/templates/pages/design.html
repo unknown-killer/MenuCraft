@@ -1,0 +1,288 @@
+{{ define "content" }}
+<div class="editor" data-designer>
+
+  <div class="editor-controls">
+    <header class="page-head page-head-tight">
+      <div>
+        <h1>{{ .T "design.title" }}</h1>
+        <p class="muted">{{ .T "design.subtitle" }}</p>
+      </div>
+    </header>
+
+    <!-- ============ drag-ordered section list ============ -->
+    <section class="card">
+      <h2 class="section-title">{{ .T "design.order" }}</h2>
+      <p class="muted">{{ .T "design.order_hint" }}</p>
+
+      <ul class="sect-list" data-section-list data-reorder-url="/panel/design/sections">
+        {{ range .Page.Sections }}
+          <li class="sect-row {{ if .Hidden }}is-off{{ end }}" data-key="{{ .Key }}">
+            <span class="drag" aria-hidden="true">⠿</span>
+            <span class="sect-row-ico">{{ .Icon }}</span>
+            <span class="sect-row-main">
+              <strong>{{ .Label }}</strong>
+              <small class="muted">
+                {{ if .IsBlock }}{{ $.T (printf "blk.kind.%s" .Block.Kind) }}{{ else }}{{ $.T "design.builtin" }}{{ end }}
+                {{ if .Hidden }} · {{ $.T "design.hidden" }}{{ end }}
+              </small>
+            </span>
+
+            {{ if .IsBlock }}
+              <span class="sect-row-actions">
+                {{ if eq (printf "%s" .Block.Kind) "canvas" }}
+                  <a class="btn btn-quiet btn-sm" href="/panel/design/canvas/{{ .Block.ID }}">{{ $.T "act.edit" }}</a>
+                {{ else }}
+                <button type="button" class="btn btn-quiet btn-sm"
+                        data-open-block="{{ .Block.Kind }}"
+                        data-block='{{ dict
+                            "id" .Block.ID "kind" .Block.Kind
+                            "title_fa" .Block.TitleFa "title_en" .Block.TitleEn
+                            "body_fa" .Block.BodyFa "body_en" .Block.BodyEn
+                            "image_path" .Block.ImagePath "images" .Block.Images
+                            "link_url" .Block.LinkURL
+                            "link_label_fa" .Block.LinkLabelFa "link_label_en" .Block.LinkLabelEn
+                            "is_visible" .Block.IsVisible "style" .Block.Style | jsonAttr }}'>
+                  {{ $.T "act.edit" }}
+                </button>
+                {{ end }}
+                <form method="post" action="/panel/design/block/{{ .Block.ID }}/delete" class="inline"
+                      data-confirm="{{ $.T "msg.delete_ask" }}">
+                  <input type="hidden" name="csrf_token" value="{{ $.CSRF }}">
+                  <button type="submit" class="btn btn-danger btn-sm">{{ $.T "act.delete" }}</button>
+                </form>
+              </span>
+            {{ end }}
+          </li>
+        {{ end }}
+      </ul>
+    </section>
+
+    <!-- ============ add a block ============ -->
+    <section class="card">
+      <h2 class="section-title">{{ .T "design.blocks" }}</h2>
+      <p class="muted">{{ .T "design.blocks_hint" }}</p>
+
+      <a class="cv-entry" href="/panel/design/canvas/new">
+        <span class="cv-entry-ico">🎨</span>
+        <span class="cv-entry-main">
+          <strong>{{ .T "cv.title" }}</strong>
+          <small>{{ .T "cv.subtitle" }}</small>
+        </span>
+        <span class="btn btn-primary btn-sm">{{ .T "cv.new" }}</span>
+      </a>
+
+      <div class="kind-grid">
+        {{ range .Page.Kinds }}
+          {{ if eq (printf "%s" .) "canvas" }}{{ continue }}{{ end }}
+          <button type="button" class="kind" data-open-block="{{ . }}">
+            <span class="kind-ico">
+              {{ if eq (printf "%s" .) "heading" }}🅷
+              {{ else if eq (printf "%s" .) "text" }}¶
+              {{ else if eq (printf "%s" .) "image" }}🖼
+              {{ else if eq (printf "%s" .) "banner" }}🎏
+              {{ else if eq (printf "%s" .) "gallery" }}🖼
+              {{ else if eq (printf "%s" .) "quote" }}❝
+              {{ else if eq (printf "%s" .) "button" }}🔘
+              {{ else if eq (printf "%s" .) "divider" }}―
+              {{ else }}␣{{ end }}
+            </span>
+            <strong>{{ $.T (printf "blk.kind.%s" .) }}</strong>
+          </button>
+        {{ end }}
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ live preview ============ -->
+  <div class="editor-preview">
+    <div class="preview-bar">
+      <span class="preview-title">{{ .T "theme.preview" }}</span>
+      <div class="seg seg-sm" role="radiogroup" aria-label="{{ .T "theme.device" }}">
+        <label class="seg-opt">
+          <input type="radio" name="device" value="mobile" checked data-device>
+          <span>{{ .T "theme.mobile" }}</span>
+        </label>
+        <label class="seg-opt">
+          <input type="radio" name="device" value="tablet" data-device>
+          <span>{{ .T "theme.tablet" }}</span>
+        </label>
+        <label class="seg-opt">
+          <input type="radio" name="device" value="desktop" data-device>
+          <span>{{ .T "theme.desktop" }}</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="preview-stage" data-stage="mobile">
+      <iframe title="{{ .T "theme.preview" }}" src="/panel/theme/preview" data-preview-frame></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== block dialog ===================== -->
+<dialog class="modal modal-lg" data-block-modal
+        data-title-new="{{ .T "design.new_block" }}"
+        data-title-edit="{{ .T "design.edit_block" }}">
+  <form method="post" action="/panel/design/block" class="modal-form">
+    <input type="hidden" name="csrf_token" value="{{ .CSRF }}">
+    <input type="hidden" name="id" data-block-id value="">
+    <input type="hidden" name="kind" data-block-kind value="text">
+
+    <header class="modal-head">
+      <strong data-block-title>{{ .T "design.new_block" }}</strong>
+      <button type="button" class="picker-x" data-close-modal aria-label="{{ .T "act.close" }}">×</button>
+    </header>
+
+    <div class="modal-body">
+
+      <h3 class="mini-title">{{ .T "blk.content" }}</h3>
+
+      <div class="grid-2" data-when="heading text banner quote image gallery button">
+        <label class="field">
+          <span class="field-label">{{ .T "blk.title" }} (FA)</span>
+          <input type="text" name="title_fa" data-b="title_fa">
+        </label>
+        <label class="field">
+          <span class="field-label">{{ .T "blk.title" }} (EN)</span>
+          <input type="text" name="title_en" dir="ltr" data-b="title_en">
+        </label>
+      </div>
+
+      <div class="grid-2" data-when="text banner quote heading">
+        <label class="field">
+          <span class="field-label">{{ .T "blk.body" }} (FA)</span>
+          <textarea name="body_fa" rows="3" data-b="body_fa"></textarea>
+        </label>
+        <label class="field">
+          <span class="field-label">{{ .T "blk.body" }} (EN)</span>
+          <textarea name="body_en" rows="3" dir="ltr" data-b="body_en"></textarea>
+        </label>
+      </div>
+
+      <div class="field" data-when="image banner gallery">
+        <span class="field-label">{{ .T "blk.image" }}</span>
+        <div class="img-pick">
+          <div class="img-pick-preview img-pick-wide is-empty" data-img-preview="blk_image_path"></div>
+          <div class="img-pick-actions">
+            <button type="button" class="btn btn-quiet btn-sm" data-pick-image="blk_image_path">{{ .T "media.pick" }}</button>
+            <button type="button" class="btn btn-quiet btn-sm" data-clear-image="blk_image_path">{{ .T "act.remove" }}</button>
+          </div>
+          <input type="hidden" name="image_path" id="blk_image_path" data-b="image_path" value="">
+        </div>
+      </div>
+
+      <div class="field" data-when="gallery">
+        <span class="field-label">{{ .T "blk.images" }}</span>
+        <div class="gallery-pick" data-gallery>
+          <div class="gallery-strip" data-gallery-strip></div>
+          <button type="button" class="btn btn-quiet btn-sm" data-gallery-add>{{ .T "act.add" }}</button>
+          <input type="hidden" name="images" data-b="images" value="">
+        </div>
+      </div>
+
+      <div class="grid-2" data-when="button banner text">
+        <label class="field">
+          <span class="field-label">{{ .T "blk.link" }}</span>
+          <input type="text" name="link_url" dir="ltr" placeholder="https://" data-b="link_url">
+        </label>
+        <label class="field">
+          <span class="field-label">{{ .T "blk.link_label" }}</span>
+          <input type="text" name="link_label_fa" data-b="link_label_fa">
+        </label>
+      </div>
+
+      <h3 class="mini-title">{{ .T "blk.style" }}</h3>
+
+      <div class="grid-2">
+        {{ template "ctl_select" dict "name" "s_size" "label" (.T "blk.s.size") "value" "md" "options" (list
+            (dict "k" "xs" "l" (.T "sz.xs")) (dict "k" "sm" "l" (.T "sz.sm"))
+            (dict "k" "md" "l" (.T "sz.md")) (dict "k" "lg" "l" (.T "sz.lg"))
+            (dict "k" "xl" "l" (.T "sz.xl")) (dict "k" "xxl" "l" (.T "sz.xxl"))) }}
+
+        {{ template "ctl_select" dict "name" "s_align" "label" (.T "blk.s.align") "value" "center" "options" (list
+            (dict "k" "start" "l" (.T "al.start")) (dict "k" "center" "l" (.T "al.center"))
+            (dict "k" "end" "l" (.T "al.end"))) }}
+
+        {{ template "ctl_select" dict "name" "s_color" "label" (.T "blk.s.color") "value" "text" "options" (list
+            (dict "k" "text" "l" (.T "clr.text")) (dict "k" "muted" "l" (.T "clr.muted"))
+            (dict "k" "primary" "l" (.T "theme.c.primary")) (dict "k" "accent" "l" (.T "clr.accent"))
+            (dict "k" "price" "l" (.T "theme.c.price")) (dict "k" "custom" "l" (.T "clr.custom"))) }}
+
+        {{ template "ctl_select" dict "name" "s_bg" "label" (.T "blk.s.bg") "value" "none" "options" (list
+            (dict "k" "none" "l" (.T "bgo.none")) (dict "k" "surface" "l" (.T "bgo.surface"))
+            (dict "k" "primary" "l" (.T "bgo.primary")) (dict "k" "accent" "l" (.T "bgo.accent"))
+            (dict "k" "gradient" "l" (.T "bgo.gradient")) (dict "k" "glass" "l" (.T "bgo.glass"))
+            (dict "k" "image" "l" (.T "bgo.image"))) }}
+
+        {{ template "ctl_select" dict "name" "s_width" "label" (.T "blk.s.width") "value" "normal" "options" (list
+            (dict "k" "narrow" "l" (.T "wd.narrow")) (dict "k" "normal" "l" (.T "wd.normal"))
+            (dict "k" "wide" "l" (.T "wd.wide")) (dict "k" "full" "l" (.T "wd.full"))) }}
+
+        {{ template "ctl_select" dict "name" "s_padding" "label" (.T "blk.s.padding") "value" "md" "options" (list
+            (dict "k" "none" "l" (.T "pd.none")) (dict "k" "sm" "l" (.T "pd.sm"))
+            (dict "k" "md" "l" (.T "pd.md")) (dict "k" "lg" "l" (.T "pd.lg"))
+            (dict "k" "xl" "l" (.T "pd.xl"))) }}
+
+        {{ template "ctl_select" dict "name" "s_effect" "label" (.T "blk.s.effect") "value" "fade" "options" (list
+            (dict "k" "none" "l" (.T "fx.none")) (dict "k" "fade" "l" (.T "fx.fade"))
+            (dict "k" "slide" "l" (.T "fx.slide")) (dict "k" "zoom" "l" (.T "fx.zoom"))
+            (dict "k" "float" "l" (.T "fx.float")) (dict "k" "glow" "l" (.T "fx.glow"))
+            (dict "k" "shine" "l" (.T "fx.shine"))) }}
+
+        <div data-when="image banner gallery">
+          {{ template "ctl_select" dict "name" "s_ratio" "label" (.T "blk.s.ratio") "value" "16:9" "options" (list
+              (dict "k" "auto" "l" "auto") (dict "k" "square" "l" (.T "theme.card.square"))
+              (dict "k" "4:3" "l" "4:3") (dict "k" "16:9" "l" "16:9")
+              (dict "k" "21:9" "l" "21:9") (dict "k" "3:4" "l" "3:4")) }}
+        </div>
+
+        <div data-when="divider">
+          {{ template "ctl_select" dict "name" "s_divider" "label" (.T "blk.s.divider") "value" "line" "options" (list
+              (dict "k" "line" "l" (.T "dv.line")) (dict "k" "dots" "l" (.T "dv.dots"))
+              (dict "k" "dashed" "l" (.T "dv.dashed")) (dict "k" "gradient" "l" (.T "dv.gradient"))
+              (dict "k" "ornament" "l" (.T "dv.ornament"))) }}
+        </div>
+      </div>
+
+      <div class="grid-2">
+        {{ template "ctl_range" dict "name" "s_weight" "label" (.T "blk.s.weight") "value" 400 "min" 300 "max" 900 "step" 100 "unit" "" }}
+        {{ template "ctl_range" dict "name" "s_radius" "label" (.T "blk.s.radius") "value" 18 "min" 0 "max" 48 "step" 1 "unit" "px" }}
+        {{ template "ctl_range" dict "name" "s_shadow" "label" (.T "blk.s.shadow") "value" 0 "min" 0 "max" 5 "step" 1 "unit" "" }}
+
+        <div data-when="banner spacer">
+          {{ template "ctl_range" dict "name" "s_height" "label" (.T "blk.s.height") "value" 40 "min" 8 "max" 700 "step" 4 "unit" "px" }}
+        </div>
+        <div data-when="gallery">
+          {{ template "ctl_range" dict "name" "s_columns" "label" (.T "blk.s.columns") "value" 3 "min" 1 "max" 5 "step" 1 "unit" "" }}
+        </div>
+        <div data-when="banner image">
+          {{ template "ctl_range" dict "name" "s_overlay" "label" (.T "blk.s.overlay") "value" 0.45 "min" 0 "max" 1 "step" 0.05 "unit" "" }}
+        </div>
+      </div>
+
+      <div class="field" data-when-color="custom">
+        {{ template "ctl_color" dict "name" "s_customCol" "label" (.T "blk.s.custom") "value" "#ffffff" }}
+      </div>
+
+      <div class="toggle-grid">
+        {{ template "ctl_toggle" dict "name" "s_italic" "label" (.T "blk.s.italic") "checked" false }}
+        {{ template "ctl_toggle" dict "name" "s_uppercase" "label" (.T "blk.s.uppercase") "checked" false }}
+        {{ template "ctl_toggle" dict "name" "s_border" "label" (.T "blk.s.border") "checked" false }}
+        {{ template "ctl_toggle" dict "name" "is_visible" "label" (.T "blk.visible") "checked" true }}
+      </div>
+    </div>
+
+    <footer class="modal-foot">
+      <button type="button" class="btn btn-quiet" data-close-modal>{{ .T "act.cancel" }}</button>
+      <button type="submit" class="btn btn-primary">{{ .T "act.save" }}</button>
+    </footer>
+  </form>
+</dialog>
+
+{{ template "media_picker" . }}
+{{ end }}
+
+{{ define "scripts" }}
+<script src="{{ .Asset "js/menu-editor.js" }}" defer></script>
+<script src="{{ .Asset "js/designer.js" }}" defer></script>
+{{ end }}

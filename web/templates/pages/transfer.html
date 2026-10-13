@@ -1,0 +1,29 @@
+{{ define "content" }}
+<header class="page-head"><div><h1>{{ .T "transfer.title" }}</h1><p class="muted">{{ .T "transfer.subtitle" }}</p></div></header>
+<section class="card">
+  <h2>{{ .T "transfer.export" }}</h2>
+  <p class="muted">{{ .T "transfer.export_hint" }}</p>
+  <div class="row-actions">
+    <a href="/panel/menu/export" class="btn btn-primary" download>{{ .T "transfer.json" }}</a>
+    <a href="/panel/menu/export?format=csv" class="btn btn-ghost" download>{{ .T "transfer.csv" }}</a>
+  </div>
+</section>
+<section class="card">
+  <h2>{{ .T "transfer.import" }}</h2>
+  <p class="muted">{{ .T "transfer.import_hint" }}</p>
+  <form method="post" action="/panel/menu/import" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ .CSRF }}">
+    <label class="field"><span class="field-label">{{ .T "transfer.file" }}</span>
+      <input type="file" name="menu_file" accept=".json,application/json" required>
+    </label>
+    <label class="field"><span><input type="checkbox" name="replace"> {{ .T "transfer.replace" }}</span></label>
+    <p class="hint">{{ .T "transfer.replace_hint" }}</p>
+    <button class="btn btn-primary" type="submit">{{ .T "transfer.import" }}</button>
+  </form>
+</section>
+<section class="card">
+  <h2>WordPress</h2>
+  <p>{{ .T "transfer.wordpress" }}</p>
+  <code dir="ltr">[menucraft_menu lang="fa"]</code>
+</section>
+{{ end }}

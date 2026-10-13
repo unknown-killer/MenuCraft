@@ -1,0 +1,33 @@
+{{ define "content" }}
+<div class="auth-card">
+  <h1>{{ .T "auth.login.title" }}</h1>
+  <p class="muted">{{ .T "auth.login.subtitle" }}</p>
+
+  {{ with .Page.Error }}
+    <div class="field-error-box" role="alert">{{ . }}</div>
+  {{ end }}
+
+  <form method="post" action="/login" class="stack" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ .CSRF }}">
+    <input type="hidden" name="next" value="{{ .Page.Next }}">
+
+    <label class="field">
+      <span class="field-label">{{ .T "auth.login_field" }}</span>
+      <input type="text" name="login" required autocomplete="username" autofocus
+             value="{{ index .Page.Values "login" }}">
+    </label>
+
+    <label class="field">
+      <span class="field-label">{{ .T "auth.password" }}</span>
+      <input type="password" name="password" required autocomplete="current-password">
+    </label>
+
+    <button type="submit" class="btn btn-primary btn-block btn-lg">{{ .T "auth.submit_login" }}</button>
+  </form>
+
+  <p class="auth-alt">
+    {{ .T "auth.no_account" }}
+    <a href="/register">{{ .T "nav.register" }}</a>
+  </p>
+</div>
+{{ end }}

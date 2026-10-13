@@ -1,0 +1,99 @@
+{{ define "content" }}
+<main class="land">
+
+  <section class="land-hero">
+    <div class="land-aurora" aria-hidden="true"><span></span><span></span><span></span></div>
+
+    <div class="land-hero-inner">
+      <span class="pill">{{ .T "land.free_forever" }}</span>
+      <h1>{{ .T "land.hero_title" }}</h1>
+      <p>{{ .T "land.hero_body" }}</p>
+      <div class="land-cta">
+        <a class="btn btn-primary btn-lg" href="/register">{{ .T "land.cta_start" }}</a>
+        <a class="btn btn-ghost btn-lg" href="/login">{{ .T "land.cta_login" }}</a>
+      </div>
+    </div>
+
+    <div class="land-mock" aria-hidden="true">
+      <div class="mock-phone">
+        <div class="mock-bar"><i></i><i></i><i></i></div>
+        <div class="mock-cover"></div>
+        <div class="mock-logo"></div>
+        <div class="mock-tabs"><b></b><b></b><b></b><b></b></div>
+        <div class="mock-cards">
+          <div class="mock-card"><span class="mock-img"></span><span class="mock-lines"><i></i><i></i></span></div>
+          <div class="mock-card"><span class="mock-img"></span><span class="mock-lines"><i></i><i></i></span></div>
+          <div class="mock-card"><span class="mock-img"></span><span class="mock-lines"><i></i><i></i></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="land-section">
+    <h2 class="section-title">{{ .T "land.features" }}</h2>
+    <div class="feature-grid">
+      <article class="feature">
+        <div class="feature-ico">🎨</div>
+        <h3>{{ .T "land.f1_title" }}</h3>
+        <p>{{ .T "land.f1_body" }}</p>
+      </article>
+      <article class="feature">
+        <div class="feature-ico">✨</div>
+        <h3>{{ .T "land.f2_title" }}</h3>
+        <p>{{ .T "land.f2_body" }}</p>
+      </article>
+      <article class="feature">
+        <div class="feature-ico">🌐</div>
+        <h3>{{ .T "land.f3_title" }}</h3>
+        <p>{{ .T "land.f3_body" }}</p>
+      </article>
+      <article class="feature">
+        <div class="feature-ico">📱</div>
+        <h3>{{ .T "land.f4_title" }}</h3>
+        <p>{{ .T "land.f4_body" }}</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="land-section">
+    <h2 class="section-title">{{ .T "theme.presets" }}</h2>
+    <div class="swatch-wall">
+      {{ range .Page.Presets }}
+        <div class="swatch-card">
+          <div class="swatch-strip">
+            {{ range .Swatch }}<span style="background:{{ . }}"></span>{{ end }}
+          </div>
+          <strong>{{ if $.IsRTL }}{{ .LabelFa }}{{ else }}{{ .LabelEn }}{{ end }}</strong>
+          <small>{{ if $.IsRTL }}{{ .NoteFa }}{{ else }}{{ .NoteEn }}{{ end }}</small>
+        </div>
+      {{ end }}
+    </div>
+  </section>
+
+  <section class="land-section">
+    <h2 class="section-title">{{ .T "land.how_title" }}</h2>
+    <ol class="steps">
+      <li>
+        <span class="step-n">{{ .N 1 }}</span>
+        <h3>{{ .T "land.step1" }}</h3>
+        <p>{{ .T "land.step1_body" }}</p>
+      </li>
+      <li>
+        <span class="step-n">{{ .N 2 }}</span>
+        <h3>{{ .T "land.step2" }}</h3>
+        <p>{{ .T "land.step2_body" }}</p>
+      </li>
+      <li>
+        <span class="step-n">{{ .N 3 }}</span>
+        <h3>{{ .T "land.step3" }}</h3>
+        <p>{{ .T "land.step3_body" }}</p>
+      </li>
+    </ol>
+
+    <div class="land-cta land-cta-center">
+      <a class="btn btn-primary btn-lg" href="/register">{{ .T "land.cta_start" }}</a>
+    </div>
+  </section>
+
+</main>
+{{ end }}
