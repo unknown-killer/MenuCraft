@@ -7,8 +7,10 @@ on:
         required: true
         default: '1.1.0'
   push:
+    branches: [main]
     paths:
       - 'menucraft-source.bundle'
+      - 'menucraft-source.b64'
     tags:
       - 'v*'
 permissions:
@@ -36,11 +38,16 @@ jobs:
           set -euo pipefail
           git config user.name unknown-killer
           git config user.email unknown-killer@users.noreply.github.com
-          if [ -f menucraft-source.bundle ]; then
-            git bundle verify menucraft-source.bundle
-            git fetch ./menucraft-source.bundle main:source-import
+          if [ -f menucraft-source.b64 ] || [ -f menucraft-source.bundle ]; then
+            bundle="$GITHUB_WORKSPACE/menucraft-source.bundle"
+            if [ -f menucraft-source.b64 ]; then
+              bundle="$RUNNER_TEMP/menucraft-source.bundle"
+              base64 --decode menucraft-source.b64 > "$bundle"
+            fi
+            git bundle verify "$bundle"
+            git fetch "$bundle" main:source-import
             git merge --allow-unrelated-histories --no-edit source-import
-            git rm menucraft-source.bundle
+            git rm --ignore-unmatch menucraft-source.bundle menucraft-source.b64
             git commit -m "Remove initial source transport after preserving Git history"
             git push origin HEAD:main
           fi
