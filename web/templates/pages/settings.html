@@ -1,0 +1,210 @@
+{{ define "content" }}
+{{ $r := .Restaurant }}
+
+<header class="page-head">
+  <div>
+    <h1>{{ .T "set.title" }}</h1>
+    <p class="muted">{{ .T "set.subtitle" }}</p>
+  </div>
+</header>
+
+<form method="post" action="/panel/settings" class="stack-lg">
+  <input type="hidden" name="csrf_token" value="{{ .CSRF }}">
+
+  <section class="card">
+    <h2 class="section-title">{{ .T "set.identity" }}</h2>
+
+    <div class="grid-2">
+      <label class="field">
+        <span class="field-label">{{ .T "menu.name_fa" }}</span>
+        <input type="text" name="name_fa" value="{{ $r.NameFa }}">
+      </label>
+      <label class="field">
+        <span class="field-label">{{ .T "menu.name_en" }}</span>
+        <input type="text" name="name_en" dir="ltr" value="{{ $r.NameEn }}">
+      </label>
+    </div>
+
+    <div class="grid-2">
+      <label class="field">
+        <span class="field-label">{{ .T "set.tagline_fa" }}</span>
+        <input type="text" name="tagline_fa" value="{{ $r.TaglineFa }}">
+      </label>
+      <label class="field">
+        <span class="field-label">{{ .T "set.tagline_en" }}</span>
+        <input type="text" name="tagline_en" dir="ltr" value="{{ $r.TaglineEn }}">
+      </label>
+    </div>
+
+    <div class="grid-2">
+      <label class="field">
+        <span class="field-label">{{ .T "menu.desc_fa" }}</span>
+        <textarea name="description_fa" rows="3">{{ $r.DescriptionFa }}</textarea>
+      </label>
+      <label class="field">
+        <span class="field-label">{{ .T "menu.desc_en" }}</span>
+        <textarea name="description_en" rows="3" dir="ltr">{{ $r.DescriptionEn }}</textarea>
+      </label>
+    </div>
+
+    <div class="grid-2">
+      <label class="field">
+        <span class="field-label">{{ .T "set.slug" }}</span>
+        <input type="text" name="slug" dir="ltr" value="{{ $r.Slug }}" pattern="[a-z0-9\-]+">
+        <small class="hint">{{ .T "set.slug_hint" }} · <code dir="ltr">/m/{{ $r.Slug }}</code></small>
+      </label>
+
+      <label class="field">
+        <span class="field-label">{{ .T "auth.business_type" }}</span>
+        <select name="business_type" class="input">
+          {{ range .Page.BusinessTypes }}
+            <option value="{{ . }}" {{ if eq $r.BusinessType . }}selected{{ end }}>{{ $.T (printf "biz.%s" .) }}</option>
+          {{ end }}
+        </select>
+      </label>
+    </div>
+
+    <div class="grid-2">
+      <div class="field">
+        <span class="field-label">{{ .T "set.logo" }}</span>
+        <div class="img-pick">
+          <div class="img-pick-preview {{ if not $r.LogoPath }}is-empty{{ end }}" data-img-preview="logo_path">
+            {{ if $r.LogoPath }}<img src="{{ $r.LogoPath }}" alt="">{{ end }}
+          </div>
+          <div class="img-pick-actions">
+            <button type="button" class="btn btn-quiet btn-sm" data-pick-image="logo_path">{{ .T "media.pick" }}</button>
+            <button type="button" class="btn btn-quiet btn-sm" data-clear-image="logo_path">{{ .T "act.remove" }}</button>
+          </div>
+          <input type="hidden" name="logo_path" id="logo_path" value="{{ $r.LogoPath }}">
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="field-label">{{ .T "set.cover" }}</span>
+        <div class="img-pick">
+          <div class="img-pick-preview img-pick-wide {{ if not $r.CoverPath }}is-empty{{ end }}" data-img-preview="cover_path">
+            {{ if $r.CoverPath }}<img src="{{ $r.CoverPath }}" alt="">{{ end }}
+          </div>
+          <div class="img-pick-actions">
+            <button type="button" class="btn btn-quiet btn-sm" data-pick-image="cover_path">{{ .T "media.pick" }}</button>
+            <button type="button" class="btn btn-quiet btn-sm" data-clear-image="cover_path">{{ .T "act.remove" }}</button>
+          </div>
+          <input type="hidden" name="cover_path" id="cover_path" value="{{ $r.CoverPath }}">
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <label class="field">
+        <span class="field-label">{{ .T "set.currency" }}</span>
+        <select name="currency" class="input">
+          {{ range .Page.Currencies }}
+            <option value="{{ . }}" {{ if eq $r.Currency . }}selected{{ end }}>{{ currencyLabel $.Lang . }}</option>
+          {{ end }}
+        </select>
+      </label>
+
+      <div class="field field-mid">
+        {{ template "ctl_toggle" dict "name" "is_published" "label" (.T "set.published") "checked" $r.IsPublished }}
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="section-title">{{ .T "set.contact" }}</h2>
+    <div class="grid-2">
+      <label class="field">
+        <span class="field-label">{{ .T "set.phone" }}</span>
+        <input type="text" name="phone" dir="ltr" value="{{ $r.Phone }}">
+      </label>
+      <label class="field">
+        <span class="field-label">{{ .T "set.website" }}</span>
+        <input type="text" name="website" dir="ltr" value="{{ $r.Website }}" placeholder="https://">
+      </label>
+    </div>
+
+    <div class="grid-2">
+      <label class="field">
+        <span class="field-label">{{ .T "set.address_fa" }}</span>
+        <input type="text" name="address_fa" value="{{ $r.AddressFa }}">
+      </label>
+      <label class="field">
+        <span class="field-label">{{ .T "set.address_en" }}</span>
+        <input type="text" name="address_en" dir="ltr" value="{{ $r.AddressEn }}">
+      </label>
+    </div>
+
+    <div class="grid-3">
+      <label class="field">
+        <span class="field-label">Instagram</span>
+        <input type="text" name="instagram" dir="ltr" value="{{ $r.Instagram }}" placeholder="username">
+      </label>
+      <label class="field">
+        <span class="field-label">Telegram</span>
+        <input type="text" name="telegram" dir="ltr" value="{{ $r.Telegram }}" placeholder="username">
+      </label>
+      <label class="field">
+        <span class="field-label">WhatsApp</span>
+        <input type="text" name="whatsapp" dir="ltr" value="{{ $r.WhatsApp }}" placeholder="+98...">
+      </label>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="section-title">{{ .T "set.hours" }}</h2>
+    <div class="hours">
+      {{ $days := weekdays .Lang }}
+      {{ range $i, $h := .Page.Hours }}
+        <div class="hour-row">
+          <span class="hour-day">{{ index $days $i }}</span>
+          <input type="time" name="opens_{{ $i }}" value="{{ $h.OpensAt }}" class="input input-sm">
+          <span class="hour-sep">—</span>
+          <input type="time" name="closes_{{ $i }}" value="{{ $h.ClosesAt }}" class="input input-sm">
+          {{ template "ctl_toggle" dict "name" (printf "closed_%d" $i) "label" ($.T "set.closed") "checked" $h.IsClosed }}
+        </div>
+      {{ end }}
+    </div>
+  </section>
+
+  <div class="sticky-actions">
+    <button type="submit" class="btn btn-primary btn-lg">{{ .T "act.save" }}</button>
+  </div>
+</form>
+
+<section class="card">
+  <h2 class="section-title">{{ .T "set.qr" }}</h2>
+  <p class="muted">{{ .T "set.qr_hint" }}</p>
+  <div class="qr-row">
+    <img class="qr-img" src="/m/{{ $r.Slug }}/qr?size=320" alt="QR" width="240" height="240">
+    <div class="stack">
+      <code class="menu-link" dir="ltr">{{ .Page.MenuURL }}</code>
+      <a class="btn btn-quiet" href="/m/{{ $r.Slug }}/qr?size=1024&download=1" download>{{ .T "set.download_qr" }}</a>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <h2 class="section-title">{{ .T "set.account" }}</h2>
+  <form method="post" action="/panel/settings/password" class="grid-2">
+    <input type="hidden" name="csrf_token" value="{{ .CSRF }}">
+    <label class="field">
+      <span class="field-label">{{ .T "set.old_password" }}</span>
+      <input type="password" name="old_password" autocomplete="current-password" required>
+    </label>
+    <label class="field">
+      <span class="field-label">{{ .T "set.new_password" }}</span>
+      <input type="password" name="new_password" autocomplete="new-password" required>
+      <small class="hint">{{ .T "auth.password_hint" }}</small>
+    </label>
+    <div class="field-span">
+      <button type="submit" class="btn btn-quiet">{{ .T "set.change_pass" }}</button>
+    </div>
+  </form>
+</section>
+
+{{ template "media_picker" . }}
+{{ end }}
+
+{{ define "scripts" }}
+<script src="{{ .Asset "js/menu-editor.js" }}" defer></script>
+{{ end }}

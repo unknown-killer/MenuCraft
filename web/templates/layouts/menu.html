@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="{{ .Locale.HTML }}" dir="{{ .Locale.Dir }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="{{ .Page.Config.ColorScheme }}">
+  <title>{{ .Title }}</title>
+
+  {{/* Applied before first paint so a stored choice never flashes the wrong
+       palette. Inline because an external file would arrive too late. */}}
+  <script nonce="{{ .Nonce }}">
+    (function () {
+      try {
+        var m = localStorage.getItem('menu-mode');
+        if (m === 'dark' || m === 'light') {
+          document.documentElement.setAttribute('data-mode', m);
+        }
+      } catch (e) { /* private mode: fall back to the theme default */ }
+    })();
+  </script>
+  {{ with .Page.Venue }}
+    <meta name="description" content="{{ .Description $.Lang }}">
+  {{ end }}
+  <link rel="icon" href="/static/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ .Asset "css/menu.css" }}">
+  <link rel="stylesheet" href="{{ .Asset "css/blocks.css" }}">
+  <link rel="stylesheet" href="{{ .Asset "css/canvas.css" }}">
+
+  {{/* Theme variables generated server-side from the owner's saved config. */}}
+  <style id="theme-vars">{{ .Page.CSSVars }}</style>
+  {{/* Filled in by the editor for live preview; empty in normal viewing. */}}
+  <style id="live-vars"></style>
+
+  {{/* The owner's own stylesheet, last so it wins over everything above. */}}
+  {{ with .Page.Config.Custom }}<style id="custom-css">{{ customCSS . }}</style>{{ end }}
+</head>
+<body class="menu-body {{ .Page.BodyClass }}"
+      {{ if .Page.IsPreview }}data-preview="1"{{ end }}>
+
+<div class="bg-layer" aria-hidden="true"></div>
+<div class="bg-pattern" aria-hidden="true"></div>
+
+{{ template "content" . }}
+
+<script src="{{ .Asset "js/menu.js" }}" defer></script>
+</body>
+</html>

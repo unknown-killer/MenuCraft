@@ -1,0 +1,294 @@
+{{ define "content" }}
+<header class="page-head">
+  <div>
+    <h1>{{ .T "menu.title" }}</h1>
+    <p class="muted">{{ .T "menu.subtitle" }}</p>
+  </div>
+  <div class="row-actions">
+    <button type="button" class="btn btn-quiet" data-open-cat="">{{ .T "menu.new_category" }}</button>
+    <button type="button" class="btn btn-primary" data-open-item="">{{ .T "menu.new_item" }}</button>
+  </div>
+</header>
+
+{{ if not .Page.Categories }}
+  <section class="card empty-state">
+    <div class="empty-ico">☰</div>
+    <h2>{{ .T "menu.no_categories" }}</h2>
+    <p class="muted">{{ .T "menu.templates_hint" }}</p>
+    <button type="button" class="btn btn-primary" data-open-cat="">{{ .T "menu.new_category" }}</button>
+  </section>
+{{ end }}
+
+<div class="cat-list" data-sortable="category" data-reorder-url="/panel/menu/category/reorder">
+  {{ range .Page.Categories }}
+    <section class="card cat" data-id="{{ .ID }}">
+      <header class="cat-head">
+        <span class="drag" title="{{ $.T "menu.drag_hint" }}" aria-hidden="true">⠿</span>
+        <span class="cat-ico">{{ if .Icon }}{{ .Icon }}{{ else }}•{{ end }}</span>
+        <div class="cat-titles">
+          <strong>{{ .Name $.Lang }}</strong>
+          <small class="muted">{{ $.T "menu.item_count" ($.N (len .Items)) }}{{ if not .IsVisible }} · {{ $.T "theme.l.none" }}{{ end }}</small>
+        </div>
+        <div class="cat-actions">
+          <button type="button" class="btn btn-quiet btn-sm" data-open-item="{{ .ID }}">{{ $.T "menu.new_item" }}</button>
+          <button type="button" class="btn btn-quiet btn-sm"
+                  data-open-cat="{{ .ID }}"
+                  data-cat='{{ dict "id" .ID "name_fa" .NameFa "name_en" .NameEn "description_fa" .DescriptionFa "description_en" .DescriptionEn "icon" .Icon "image_path" .ImagePath "is_visible" .IsVisible | jsonAttr }}'>
+            {{ $.T "act.edit" }}
+          </button>
+          <form method="post" action="/panel/menu/category/{{ .ID }}/delete" class="inline"
+                data-confirm="{{ $.T "msg.delete_ask" }}">
+            <input type="hidden" name="csrf_token" value="{{ $.CSRF }}">
+            <button type="submit" class="btn btn-danger btn-sm">{{ $.T "act.delete" }}</button>
+          </form>
+        </div>
+      </header>
+
+      {{ if .Items }}
+        <ul class="item-list" data-sortable="item" data-reorder-url="/panel/menu/item/reorder">
+          {{ range .Items }}
+            <li class="item {{ if not .IsAvailable }}is-off{{ end }}" data-id="{{ .ID }}">
+              <span class="drag" aria-hidden="true">⠿</span>
+
+              <span class="item-thumb">
+                {{ if .ImagePath }}<img src="{{ .ImagePath }}" alt="" loading="lazy">{{ else }}<i>🍽</i>{{ end }}
+              </span>
+
+              <span class="item-main">
+                <strong>{{ .Name $.Lang }}</strong>
+                {{ with .Description $.Lang }}<small class="muted">{{ . }}</small>{{ end }}
+                {{ if .Tags }}
+                  <span class="tag-row">
+                    {{ range .Tags }}<span class="tag">{{ $.T (printf "tag.%s" .) }}</span>{{ end }}
+                  </span>
+                {{ end }}
+              </span>
+
+              <span class="item-price">
+                {{ if .HasDiscount }}
+                  <s class="muted">{{ $.Money .Price }}</s>
+                  <strong>{{ $.Money .DiscountPrice }}</strong>
+                {{ else }}
+                  <strong>{{ $.Money .Price }}</strong>
+                {{ end }}
+              </span>
+
+              <span class="item-actions">
+                <form method="post" action="/panel/menu/item/{{ .ID }}/toggle" class="inline">
+                  <input type="hidden" name="csrf_token" value="{{ $.CSRF }}">
+                  <button type="submit" class="btn btn-quiet btn-sm">
+                    {{ if .IsAvailable }}{{ $.T "menu.available" }}{{ else }}{{ $.T "pub.unavailable" }}{{ end }}
+                  </button>
+                </form>
+                <button type="button" class="btn btn-quiet btn-sm"
+                        data-open-item="{{ .CategoryID }}"
+                        data-item='{{ dict "id" .ID "category_id" .CategoryID "name_fa" .NameFa "name_en" .NameEn "description_fa" .DescriptionFa "description_en" .DescriptionEn "price" .Price "discount_price" .DiscountPrice "image_path" .ImagePath "tags" .Tags "is_available" .IsAvailable "is_featured" .IsFeatured "calories" .Calories "prep_minutes" .PrepMinutes | jsonAttr }}'>
+                  {{ $.T "act.edit" }}
+                </button>
+                <form method="post" action="/panel/menu/item/{{ .ID }}/delete" class="inline"
+                      data-confirm="{{ $.T "msg.delete_ask" }}">
+                  <input type="hidden" name="csrf_token" value="{{ $.CSRF }}">
+                  <button type="submit" class="btn btn-danger btn-sm">{{ $.T "act.delete" }}</button>
+                </form>
+              </span>
+            </li>
+          {{ end }}
+        </ul>
+      {{ else }}
+        <p class="muted cat-empty">{{ $.T "menu.no_items" }}</p>
+      {{ end }}
+    </section>
+  {{ end }}
+</div>
+
+<section id="templates" class="card">
+  <h2 class="section-title">{{ .T "menu.templates" }}</h2>
+  <p class="muted">{{ .T "menu.templates_hint" }}</p>
+  <div class="tpl-grid">
+    {{ range .Page.Templates }}
+      <form method="post" action="/panel/menu/template" class="tpl">
+        <input type="hidden" name="csrf_token" value="{{ $.CSRF }}">
+        <input type="hidden" name="template" value="{{ .Key }}">
+        <span class="tpl-ico">{{ .Icon }}</span>
+        <strong>{{ if $.IsRTL }}{{ .LabelFa }}{{ else }}{{ .LabelEn }}{{ end }}</strong>
+        <small class="muted">{{ if $.IsRTL }}{{ .NoteFa }}{{ else }}{{ .NoteEn }}{{ end }}</small>
+        <button type="submit" class="btn btn-quiet btn-sm">{{ $.T "menu.apply_template" }}</button>
+      </form>
+    {{ end }}
+  </div>
+</section>
+
+<!-- ===================== category dialog ===================== -->
+<dialog class="modal" data-cat-modal>
+  <form method="post" action="/panel/menu/category" class="modal-form">
+    <input type="hidden" name="csrf_token" value="{{ .CSRF }}">
+    <input type="hidden" name="id" data-cat-id value="">
+
+    <header class="modal-head">
+      <strong data-cat-title>{{ .T "menu.new_category" }}</strong>
+      <button type="button" class="picker-x" data-close-modal aria-label="{{ .T "act.close" }}">×</button>
+    </header>
+
+    <div class="modal-body">
+      <div class="grid-2">
+        <label class="field">
+          <span class="field-label">{{ .T "menu.name_fa" }}</span>
+          <input type="text" name="name_fa" data-f="name_fa">
+        </label>
+        <label class="field">
+          <span class="field-label">{{ .T "menu.name_en" }}</span>
+          <input type="text" name="name_en" dir="ltr" data-f="name_en">
+        </label>
+      </div>
+
+      <div class="grid-2">
+        <label class="field">
+          <span class="field-label">{{ .T "menu.desc_fa" }}</span>
+          <input type="text" name="description_fa" data-f="description_fa">
+        </label>
+        <label class="field">
+          <span class="field-label">{{ .T "menu.desc_en" }}</span>
+          <input type="text" name="description_en" dir="ltr" data-f="description_en">
+        </label>
+      </div>
+
+      <div class="grid-2">
+        <label class="field">
+          <span class="field-label">{{ .T "menu.icon" }}</span>
+          <input type="text" name="icon" maxlength="4" class="emoji-input" data-f="icon"
+                 placeholder="🍽">
+          <small class="hint">{{ .T "menu.icon_hint" }}</small>
+        </label>
+
+        <div class="field">
+          <span class="field-label">{{ .T "menu.image" }}</span>
+          <div class="img-pick">
+            <div class="img-pick-preview is-empty" data-img-preview="cat_image_path"></div>
+            <div class="img-pick-actions">
+              <button type="button" class="btn btn-quiet btn-sm" data-pick-image="cat_image_path">{{ .T "media.pick" }}</button>
+              <button type="button" class="btn btn-quiet btn-sm" data-clear-image="cat_image_path">{{ .T "act.remove" }}</button>
+            </div>
+            <input type="hidden" name="image_path" id="cat_image_path" data-f="image_path" value="">
+          </div>
+        </div>
+      </div>
+
+      {{ template "ctl_toggle" dict "name" "is_visible" "label" (.T "menu.visible") "checked" true }}
+    </div>
+
+    <footer class="modal-foot">
+      <button type="button" class="btn btn-quiet" data-close-modal>{{ .T "act.cancel" }}</button>
+      <button type="submit" class="btn btn-primary">{{ .T "act.save" }}</button>
+    </footer>
+  </form>
+</dialog>
+
+<!-- ===================== item dialog ===================== -->
+<dialog class="modal modal-lg" data-item-modal>
+  <form method="post" action="/panel/menu/item" class="modal-form">
+    <input type="hidden" name="csrf_token" value="{{ .CSRF }}">
+    <input type="hidden" name="id" data-item-id value="">
+
+    <header class="modal-head">
+      <strong data-item-title>{{ .T "menu.new_item" }}</strong>
+      <button type="button" class="picker-x" data-close-modal aria-label="{{ .T "act.close" }}">×</button>
+    </header>
+
+    <div class="modal-body">
+      <label class="field">
+        <span class="field-label">{{ .T "menu.category" }}</span>
+        <select name="category_id" class="input" data-f="category_id" required>
+          {{ range .Page.Categories }}
+            <option value="{{ .ID }}">{{ .Name $.Lang }}</option>
+          {{ end }}
+        </select>
+      </label>
+
+      <div class="grid-2">
+        <label class="field">
+          <span class="field-label">{{ .T "menu.name_fa" }}</span>
+          <input type="text" name="name_fa" data-f="name_fa">
+        </label>
+        <label class="field">
+          <span class="field-label">{{ .T "menu.name_en" }}</span>
+          <input type="text" name="name_en" dir="ltr" data-f="name_en">
+        </label>
+      </div>
+
+      <div class="grid-2">
+        <label class="field">
+          <span class="field-label">{{ .T "menu.desc_fa" }}</span>
+          <textarea name="description_fa" rows="2" data-f="description_fa"></textarea>
+        </label>
+        <label class="field">
+          <span class="field-label">{{ .T "menu.desc_en" }}</span>
+          <textarea name="description_en" rows="2" dir="ltr" data-f="description_en"></textarea>
+        </label>
+      </div>
+
+      <div class="grid-2">
+        <label class="field">
+          <span class="field-label">{{ .T "menu.price" }}</span>
+          <input type="text" inputmode="numeric" name="price" dir="ltr" data-f="price" data-price>
+        </label>
+        <label class="field">
+          <span class="field-label">{{ .T "menu.discount_price" }}</span>
+          <input type="text" inputmode="numeric" name="discount_price" dir="ltr" data-f="discount_price" data-price>
+          <small class="hint">{{ .T "menu.discount_hint" }}</small>
+        </label>
+      </div>
+
+      <div class="grid-2">
+        <label class="field">
+          <span class="field-label">{{ .T "menu.calories" }}</span>
+          <input type="text" inputmode="numeric" name="calories" dir="ltr" data-f="calories">
+        </label>
+        <label class="field">
+          <span class="field-label">{{ .T "menu.prep_minutes" }}</span>
+          <input type="text" inputmode="numeric" name="prep_minutes" dir="ltr" data-f="prep_minutes">
+        </label>
+      </div>
+
+      <div class="field">
+        <span class="field-label">{{ .T "menu.image" }}</span>
+        <div class="img-pick">
+          <div class="img-pick-preview is-empty" data-img-preview="item_image_path"></div>
+          <div class="img-pick-actions">
+            <button type="button" class="btn btn-quiet btn-sm" data-pick-image="item_image_path">{{ .T "media.pick" }}</button>
+            <button type="button" class="btn btn-quiet btn-sm" data-clear-image="item_image_path">{{ .T "act.remove" }}</button>
+          </div>
+          <input type="hidden" name="image_path" id="item_image_path" data-f="image_path" value="">
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="field-label">{{ .T "menu.tags" }}</span>
+        <div class="chip-grid">
+          {{ range .Page.Tags }}
+            <label class="chip">
+              <input type="checkbox" name="tags" value="{{ . }}" data-tag="{{ . }}">
+              <span>{{ $.T (printf "tag.%s" .) }}</span>
+            </label>
+          {{ end }}
+        </div>
+      </div>
+
+      <div class="toggle-grid">
+        {{ template "ctl_toggle" dict "name" "is_available" "label" (.T "menu.available") "checked" true }}
+        {{ template "ctl_toggle" dict "name" "is_featured"  "label" (.T "menu.featured")  "checked" false }}
+      </div>
+    </div>
+
+    <footer class="modal-foot">
+      <button type="button" class="btn btn-quiet" data-close-modal>{{ .T "act.cancel" }}</button>
+      <button type="submit" class="btn btn-primary">{{ .T "act.save" }}</button>
+    </footer>
+  </form>
+</dialog>
+
+{{ template "media_picker" . }}
+{{ end }}
+
+{{ define "scripts" }}
+<script src="{{ .Asset "js/menu-editor.js" }}" defer></script>
+{{ end }}

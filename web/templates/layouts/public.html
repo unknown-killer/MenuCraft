@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="{{ .Locale.HTML }}" dir="{{ .Locale.Dir }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <title>{{ .Title }} · {{ .T "app.tagline" }}</title>
+  <meta name="description" content="{{ .T "app.description" }}">
+  <link rel="icon" href="/static/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ .Asset "css/panel.css" }}">
+</head>
+<body class="landing-body {{ if .IsRTL }}is-rtl{{ else }}is-ltr{{ end }}">
+
+<header class="land-nav">
+  <a class="auth-brand" href="/">
+    <span class="brand-mark">🍽</span>
+    <strong>{{ .T "app.name" }}</strong>
+  </a>
+  <nav class="land-nav-actions">
+    <div class="lang-switch">
+      {{ $cur := .Lang }}
+      {{ range locales }}
+        <a href="/lang/{{ .Code }}" class="{{ if eq .Code $cur }}is-active{{ end }}">{{ .Name }}</a>
+      {{ end }}
+    </div>
+    <a class="btn btn-quiet" href="/login">{{ .T "nav.login" }}</a>
+    <a class="btn btn-primary" href="/register">{{ .T "land.cta_start" }}</a>
+  </nav>
+</header>
+
+{{ template "content" . }}
+
+<footer class="land-foot">
+  <span>{{ .T "app.name" }}</span>
+  <span class="dot">·</span>
+  <span>{{ .T "app.tagline" }}</span>
+</footer>
+
+<script src="{{ .Asset "js/panel.js" }}" defer></script>
+</body>
+</html>

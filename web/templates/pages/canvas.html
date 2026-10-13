@@ -1,0 +1,329 @@
+{{ define "content" }}
+{{ $c := .Page.Canvas }}
+
+<div class="cv-editor" data-canvas-editor>
+
+  <header class="page-head page-head-tight">
+    <div>
+      <h1>{{ .T "cv.title" }}</h1>
+      <p class="muted">{{ .T "cv.subtitle" }}</p>
+    </div>
+    <a class="btn btn-quiet" href="/panel/design">{{ .T "act.back" }}</a>
+  </header>
+
+  <form method="post" action="/panel/design/canvas" data-canvas-form>
+    <input type="hidden" name="csrf_token" value="{{ .CSRF }}">
+    <input type="hidden" name="id" value="{{ if .Page.Block }}{{ .Page.Block.ID }}{{ end }}">
+    <input type="hidden" name="canvas" data-cv-json value="{{ .Page.CanvasJSON }}">
+
+    <!-- ===================== toolbar ===================== -->
+    <div class="cv-toolbar">
+      <div class="cv-tool-group">
+        <span class="cv-tool-label">{{ .T "cv.add" }}</span>
+        {{ range .Page.Kinds }}
+          <button type="button" class="cv-tool" data-cv-add="{{ . }}">
+            <span class="cv-tool-ico">
+              {{ if eq (printf "%s" .) "heading" }}🅷
+              {{ else if eq (printf "%s" .) "text" }}¶
+              {{ else if eq (printf "%s" .) "image" }}🖼
+              {{ else if eq (printf "%s" .) "button" }}🔘
+              {{ else if eq (printf "%s" .) "shape" }}⬛
+              {{ else if eq (printf "%s" .) "icon" }}★
+              {{ else }}💰{{ end }}
+            </span>
+            {{ $.T (printf "cv.k.%s" .) }}
+          </button>
+        {{ end }}
+      </div>
+
+      <div class="cv-tool-group">
+        <button type="button" class="btn btn-quiet btn-sm" data-cv-duplicate>⧉ {{ .T "cv.duplicate" }}</button>
+        <button type="button" class="btn btn-quiet btn-sm" data-cv-front>▲ {{ .T "cv.front" }}</button>
+        <button type="button" class="btn btn-quiet btn-sm" data-cv-back>▼ {{ .T "cv.back" }}</button>
+        <button type="button" class="btn btn-danger btn-sm" data-cv-delete>✕ {{ .T "cv.delete" }}</button>
+      </div>
+
+      <div class="cv-tool-group">
+        <span class="cv-tool-label">{{ .T "cv.align" }}</span>
+        <button type="button" class="cv-align" data-cv-align="left"    title="{{ .T "cv.al.left" }}">⇤</button>
+        <button type="button" class="cv-align" data-cv-align="hcenter" title="{{ .T "cv.al.hcenter" }}">⇹</button>
+        <button type="button" class="cv-align" data-cv-align="right"   title="{{ .T "cv.al.right" }}">⇥</button>
+        <button type="button" class="cv-align" data-cv-align="top"     title="{{ .T "cv.al.top" }}">⇡</button>
+        <button type="button" class="cv-align" data-cv-align="vcenter" title="{{ .T "cv.al.vcenter" }}">⇳</button>
+        <button type="button" class="cv-align" data-cv-align="bottom"  title="{{ .T "cv.al.bottom" }}">⇣</button>
+        <button type="button" class="cv-align" data-cv-align="stretch" title="{{ .T "cv.al.stretch" }}">⇔</button>
+      </div>
+
+      <button type="button" class="btn btn-primary" data-cv-save>{{ .T "cv.save" }}</button>
+    </div>
+
+    <p class="cv-hint muted">{{ .T "cv.hint" }}</p>
+
+    <!-- ===================== main workspace ===================== -->
+    <div class="cv-workspace">
+
+      <!-- stage -->
+      <div class="cv-edit">
+        <div data-cv-stage-wrap>
+          {{ template "canvas" dict "cv" (canvasView $c .Lang) "v" . }}
+        </div>
+        <p class="cv-empty" data-cv-empty {{ if $c.Elements }}hidden{{ end }}>{{ .T "cv.empty" }}</p>
+      </div>
+
+      <!-- side panels -->
+      <aside class="cv-side">
+
+        <section class="card cv-card">
+          <h2 class="section-title">{{ .T "cv.settings" }}</h2>
+
+          <label class="field">
+            <span class="field-label">{{ .T "cv.name" }}</span>
+            <input type="text" name="title_fa"
+                   value="{{ if .Page.Block }}{{ .Page.Block.TitleFa }}{{ end }}">
+          </label>
+
+          <div class="ctl ctl-range">
+            <div class="ctl-head">
+              <label class="ctl-label" for="cv_ratio">{{ .T "cv.ratio" }}</label>
+              <output class="ctl-out" data-out-for="ratio">{{ $c.Ratio }}</output>
+            </div>
+            <input type="range" id="cv_ratio" data-c="ratio" min="0.4" max="3" step="0.05" value="{{ $c.Ratio }}">
+          </div>
+
+          <div class="ctl ctl-range">
+            <div class="ctl-head">
+              <label class="ctl-label" for="cv_grid">{{ .T "cv.grid" }}</label>
+              <output class="ctl-out" data-out-for="grid">{{ $c.Grid }}</output>
+            </div>
+            <input type="range" id="cv_grid" data-c="grid" min="0" max="10" step="1" value="{{ $c.Grid }}">
+          </div>
+
+          <div class="ctl">
+            <label class="ctl-label" for="cv_bg">{{ .T "cv.bg" }}</label>
+            <select id="cv_bg" data-c="bg" class="input">
+              {{ template "cv_color_options" dict "v" . "sel" $c.Bg }}
+            </select>
+          </div>
+
+          <div class="ctl">
+            <span class="ctl-label">{{ .T "cv.bg_image" }}</span>
+            <div class="img-pick-actions">
+              <button type="button" class="btn btn-quiet btn-sm" data-cv-pick-bg>{{ .T "media.pick" }}</button>
+              <button type="button" class="btn btn-quiet btn-sm" data-cv-clear-bg>{{ .T "act.remove" }}</button>
+            </div>
+          </div>
+
+          <div class="ctl ctl-range">
+            <div class="ctl-head">
+              <label class="ctl-label" for="cv_overlay">{{ .T "cv.overlay" }}</label>
+              <output class="ctl-out" data-out-for="overlay">{{ $c.Overlay }}</output>
+            </div>
+            <input type="range" id="cv_overlay" data-c="overlay" min="0" max="1" step="0.05" value="{{ $c.Overlay }}">
+          </div>
+
+          {{ template "ctl_toggle" dict "name" "is_visible" "label" (.T "blk.visible") "checked" (or .Page.IsNew (and .Page.Block .Page.Block.IsVisible)) }}
+        </section>
+
+        <!-- properties -->
+        <section class="card cv-card" data-cv-props
+                 data-ktext="{{ .T "cv.k.text" }}" data-kheading="{{ .T "cv.k.heading" }}"
+                 data-kimage="{{ .T "cv.k.image" }}" data-kbutton="{{ .T "cv.k.button" }}"
+                 data-kshape="{{ .T "cv.k.shape" }}" data-kicon="{{ .T "cv.k.icon" }}"
+                 data-kprice="{{ .T "cv.k.price" }}">
+          <h2 class="section-title">{{ .T "cv.properties" }} · <span data-cv-kind-label></span></h2>
+
+          <p class="muted" data-cv-props-none>{{ .T "cv.no_selection" }}</p>
+
+          <div data-cv-props-body hidden>
+
+            <div data-for-kinds="heading text button icon price">
+              <label class="field">
+                <span class="field-label">{{ .T "cv.p.textFa" }}</span>
+                <textarea rows="2" data-p="textFa"></textarea>
+              </label>
+              <label class="field">
+                <span class="field-label">{{ .T "cv.p.textEn" }}</span>
+                <textarea rows="2" dir="ltr" data-p="textEn"></textarea>
+              </label>
+            </div>
+
+            <div data-for-kinds="image">
+              <div class="ctl">
+                <span class="ctl-label">{{ .T "cv.p.image" }}</span>
+                <button type="button" class="btn btn-quiet btn-sm" data-cv-pick-image>{{ .T "media.pick" }}</button>
+              </div>
+            </div>
+
+            <label class="field">
+              <span class="field-label">{{ .T "cv.p.link" }}</span>
+              <input type="text" dir="ltr" placeholder="https://" data-p="link">
+            </label>
+
+            <div class="grid-2">
+              <label class="field">
+                <span class="field-label">{{ .T "cv.p.x" }} %</span>
+                <input type="number" step="0.5" data-p="x">
+              </label>
+              <label class="field">
+                <span class="field-label">{{ .T "cv.p.y" }} %</span>
+                <input type="number" step="0.5" data-p="y">
+              </label>
+              <label class="field">
+                <span class="field-label">{{ .T "cv.p.w" }} %</span>
+                <input type="number" step="0.5" data-p="w">
+              </label>
+              <label class="field">
+                <span class="field-label">{{ .T "cv.p.h" }} %</span>
+                <input type="number" step="0.5" data-p="h">
+              </label>
+            </div>
+
+            {{ template "cv_range" dict "p" "rotate"     "label" (.T "cv.p.rotate")   "min" "-180" "max" "180" "step" "1" }}
+            {{ template "cv_range" dict "p" "opacity"    "label" (.T "cv.p.opacity")  "min" "0.05" "max" "1" "step" "0.05" }}
+            {{ template "cv_range" dict "p" "radius"     "label" (.T "cv.p.radius")   "min" "0" "max" "100" "step" "1" }}
+            {{ template "cv_range" dict "p" "shadow"     "label" (.T "cv.p.shadow")   "min" "0" "max" "5" "step" "1" }}
+            {{ template "cv_range" dict "p" "blur"       "label" (.T "cv.p.blur")     "min" "0" "max" "30" "step" "1" }}
+            {{ template "cv_range" dict "p" "borderW"    "label" (.T "cv.p.borderW")  "min" "0" "max" "12" "step" "0.5" }}
+
+            <div data-for-kinds="heading text button icon price">
+              {{ template "cv_range" dict "p" "fontSize"   "label" (.T "cv.p.fontSize")   "min" "0.5" "max" "30" "step" "0.25" }}
+              {{ template "cv_range" dict "p" "weight"     "label" (.T "cv.p.weight")     "min" "100" "max" "900" "step" "100" }}
+              {{ template "cv_range" dict "p" "lineHeight" "label" (.T "cv.p.lineHeight") "min" "0.8" "max" "3" "step" "0.05" }}
+              {{ template "cv_range" dict "p" "letter"     "label" (.T "cv.p.letter")     "min" "-2" "max" "8" "step" "0.1" }}
+            </div>
+
+            <div class="grid-2">
+              <div class="ctl">
+                <label class="ctl-label">{{ .T "cv.p.color" }}</label>
+                <select class="input" data-p="color">
+                  {{ template "cv_color_options" dict "v" . "sel" "@text" }}
+                </select>
+              </div>
+              <div class="ctl">
+                <label class="ctl-label">{{ .T "cv.p.bg" }}</label>
+                <select class="input" data-p="bg">
+                  {{ template "cv_color_options" dict "v" . "sel" "transparent" }}
+                </select>
+              </div>
+              <div class="ctl">
+                <label class="ctl-label">{{ .T "cv.p.borderCol" }}</label>
+                <select class="input" data-p="borderCol">
+                  {{ template "cv_color_options" dict "v" . "sel" "@border" }}
+                </select>
+              </div>
+              <div class="ctl">
+                <label class="ctl-label">{{ .T "cv.p.effect" }}</label>
+                <select class="input" data-p="effect">
+                  <option value="none">{{ .T "fx.none" }}</option>
+                  <option value="fade">{{ .T "fx.fade" }}</option>
+                  <option value="slide">{{ .T "fx.slide" }}</option>
+                  <option value="zoom">{{ .T "fx.zoom" }}</option>
+                  <option value="float">{{ .T "fx.float" }}</option>
+                  <option value="pulse">{{ .T "cv.fx.pulse" }}</option>
+                </select>
+              </div>
+              <div class="ctl">
+                <label class="ctl-label">{{ .T "cv.p.align" }}</label>
+                <select class="input" data-p="align">
+                  <option value="start">{{ .T "al.start" }}</option>
+                  <option value="center">{{ .T "al.center" }}</option>
+                  <option value="end">{{ .T "al.end" }}</option>
+                </select>
+              </div>
+              <div class="ctl">
+                <label class="ctl-label">{{ .T "cv.p.vAlign" }}</label>
+                <select class="input" data-p="vAlign">
+                  <option value="start">{{ .T "al.start" }}</option>
+                  <option value="center">{{ .T "al.center" }}</option>
+                  <option value="end">{{ .T "al.end" }}</option>
+                </select>
+              </div>
+
+              <div class="ctl" data-for-kinds="shape">
+                <label class="ctl-label">{{ .T "cv.p.shape" }}</label>
+                <select class="input" data-p="shape">
+                  <option value="rect">{{ .T "cv.sh.rect" }}</option>
+                  <option value="circle">{{ .T "cv.sh.circle" }}</option>
+                  <option value="pill">{{ .T "cv.sh.pill" }}</option>
+                  <option value="triangle">{{ .T "cv.sh.triangle" }}</option>
+                  <option value="ring">{{ .T "cv.sh.ring" }}</option>
+                </select>
+              </div>
+
+              <div class="ctl" data-for-kinds="image">
+                <label class="ctl-label">{{ .T "cv.p.objFit" }}</label>
+                <select class="input" data-p="objFit">
+                  <option value="cover">{{ .T "cv.fit.cover" }}</option>
+                  <option value="contain">{{ .T "cv.fit.contain" }}</option>
+                  <option value="fill">{{ .T "cv.fit.fill" }}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="toggle-grid" data-for-kinds="heading text button price">
+              <label class="toggle">
+                <input type="checkbox" data-p="italic">
+                <span class="toggle-track" aria-hidden="true"><span class="toggle-dot"></span></span>
+                <span class="toggle-text">{{ .T "cv.p.italic" }}</span>
+              </label>
+              <label class="toggle">
+                <input type="checkbox" data-p="underline">
+                <span class="toggle-track" aria-hidden="true"><span class="toggle-dot"></span></span>
+                <span class="toggle-text">{{ .T "cv.p.underline" }}</span>
+              </label>
+              <label class="toggle">
+                <input type="checkbox" data-p="uppercase">
+                <span class="toggle-track" aria-hidden="true"><span class="toggle-dot"></span></span>
+                <span class="toggle-text">{{ .T "cv.p.uppercase" }}</span>
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <section class="card cv-card">
+          <h2 class="section-title">{{ .T "cv.layers" }}</h2>
+          <div class="cv-layers" data-cv-layers></div>
+        </section>
+      </aside>
+    </div>
+  </form>
+</div>
+
+{{ template "media_picker" . }}
+{{ end }}
+
+
+{{/* A range control bound to an element property. */}}
+{{ define "cv_range" }}
+<div class="ctl ctl-range">
+  <div class="ctl-head">
+    <label class="ctl-label">{{ .label }}</label>
+    <output class="ctl-out" data-out-for="{{ .p }}"></output>
+  </div>
+  <input type="range" data-p="{{ .p }}" min="{{ .min }}" max="{{ .max }}" step="{{ .step }}">
+</div>
+{{ end }}
+
+
+{{/* Theme colour tokens plus transparent, shared by every colour select. */}}
+{{ define "cv_color_options" }}
+{{ $v := .v }}{{ $sel := .sel }}
+<option value="transparent" {{ if eq $sel "transparent" }}selected{{ end }}>{{ $v.T "bgo.none" }}</option>
+<option value="@text"       {{ if eq $sel "@text" }}selected{{ end }}>{{ $v.T "theme.c.text" }}</option>
+<option value="@muted"      {{ if eq $sel "@muted" }}selected{{ end }}>{{ $v.T "theme.c.textMuted" }}</option>
+<option value="@primary"    {{ if eq $sel "@primary" }}selected{{ end }}>{{ $v.T "theme.c.primary" }}</option>
+<option value="@secondary"  {{ if eq $sel "@secondary" }}selected{{ end }}>{{ $v.T "theme.c.secondary" }}</option>
+<option value="@accent"     {{ if eq $sel "@accent" }}selected{{ end }}>{{ $v.T "theme.c.accent" }}</option>
+<option value="@bg"         {{ if eq $sel "@bg" }}selected{{ end }}>{{ $v.T "theme.c.background" }}</option>
+<option value="@surface"    {{ if eq $sel "@surface" }}selected{{ end }}>{{ $v.T "theme.c.surface" }}</option>
+<option value="@surfaceAlt" {{ if eq $sel "@surfaceAlt" }}selected{{ end }}>{{ $v.T "theme.c.surfaceAlt" }}</option>
+<option value="@border"     {{ if eq $sel "@border" }}selected{{ end }}>{{ $v.T "theme.c.border" }}</option>
+<option value="@price"      {{ if eq $sel "@price" }}selected{{ end }}>{{ $v.T "theme.c.price" }}</option>
+<option value="@badge"      {{ if eq $sel "@badge" }}selected{{ end }}>{{ $v.T "theme.c.badge" }}</option>
+{{ end }}
+
+
+{{ define "scripts" }}
+<script src="{{ .Asset "js/menu-editor.js" }}" defer></script>
+<script src="{{ .Asset "js/canvas-editor.js" }}" defer></script>
+{{ end }}

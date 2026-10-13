@@ -1,0 +1,241 @@
+{{ define "content" }}
+{{ $p := .Page }}
+
+{{/* The page is assembled from the owner's drag-ordered section list. */}}
+{{ range $p.Sections }}
+  {{ if .IsBlock }}
+    {{ template "block" dict "b" .Block "v" $ }}
+  {{ else if eq .Key "header" }}
+    {{ template "sect_header" $ }}
+  {{ else if eq .Key "search" }}
+    {{ template "sect_search" $ }}
+  {{ else if eq .Key "nav" }}
+    {{ template "sect_nav" $ }}
+  {{ else if eq .Key "menu" }}
+    {{ template "sect_menu" $ }}
+  {{ else if eq .Key "hours" }}
+    {{ template "sect_hours" $ }}
+  {{ else if eq .Key "footer" }}
+    {{ template "sect_footer" $ }}
+  {{ end }}
+{{ end }}
+{{ end }}
+
+
+{{/* ===================== header ===================== */}}
+{{ define "sect_header" }}
+{{ $v := $.Page.Venue }}
+<header class="m-header">
+  {{ if $v.CoverPath }}
+    <div class="m-cover">
+      <img src="{{ $v.CoverPath }}" alt="" fetchpriority="high">
+      <span class="m-cover-veil"></span>
+    </div>
+  {{ else }}
+    <div class="m-cover m-cover-blank"><span class="m-cover-veil"></span></div>
+  {{ end }}
+
+  <div class="m-header-inner">
+    {{ if $v.LogoPath }}
+      <img class="m-logo" src="{{ $v.LogoPath }}" alt="{{ $v.Name $.Lang }}">
+    {{ else }}
+      <div class="m-logo m-logo-blank" aria-hidden="true">🍽</div>
+    {{ end }}
+
+    <h1 class="m-name">{{ $v.Name $.Lang }}</h1>
+
+    {{ if $.Page.Config.Header.ShowTagline }}
+      {{ with $v.Tagline $.Lang }}<p class="m-tagline">{{ . }}</p>{{ end }}
+    {{ end }}
+
+    {{ if or $.Page.Config.Display.ShowLangSwitch $.Page.Config.ShowModeToggle }}
+      <div class="m-langs">
+        {{ if $.Page.Config.Display.ShowLangSwitch }}
+          {{ $cur := $.Lang }}
+          {{ range locales }}
+            <a href="?lang={{ .Code }}" class="{{ if eq .Code $cur }}is-active{{ end }}">{{ .Name }}</a>
+          {{ end }}
+        {{ end }}
+        {{ if $.Page.Config.ShowModeToggle }}
+          <button type="button" class="m-mode" data-mode-toggle
+                  aria-label="{{ $.T "mode.toggle" }}" title="{{ $.T "mode.toggle" }}">
+            <span data-mode-icon>◐</span>
+          </button>
+        {{ end }}
+      </div>
+    {{ end }}
+  </div>
+</header>
+{{ end }}
+
+
+{{/* ===================== search ===================== */}}
+{{ define "sect_search" }}
+{{ if and $.Page.Config.Display.ShowSearch $.Page.HasItems }}
+<div class="m-shell">
+  <div class="m-search">
+    <input type="search" placeholder="{{ $.T "pub.search" }}" aria-label="{{ $.T "pub.search" }}" data-search>
+    <span class="m-search-ico" aria-hidden="true">⌕</span>
+  </div>
+</div>
+{{ end }}
+{{ end }}
+
+
+{{/* ===================== category nav ===================== */}}
+{{ define "sect_nav" }}
+{{ if and (ne $.Page.Config.Layout.CategoryNav "none") $.Page.HasItems }}
+<div class="m-shell">
+  <nav class="m-nav" data-nav>
+    <button type="button" class="m-nav-item is-active" data-filter="all">{{ $.T "pub.all" }}</button>
+    {{ range $.Page.Categories }}
+      <button type="button" class="m-nav-item" data-filter="c{{ .ID }}">
+        {{ if $.Page.Config.Display.ShowCategoryIcon }}{{ with .Icon }}<span class="m-nav-ico">{{ . }}</span>{{ end }}{{ end }}
+        {{ .Name $.Lang }}
+      </button>
+    {{ end }}
+  </nav>
+</div>
+{{ end }}
+{{ end }}
+
+
+{{/* ===================== the menu itself ===================== */}}
+{{ define "sect_menu" }}
+{{ $d := $.Page.Config.Display }}
+{{ $cards := $.Page.Config.Cards }}
+
+<div class="m-shell">
+  {{ if not $.Page.HasItems }}
+    <p class="m-empty">{{ $.T "pub.empty" }}</p>
+  {{ else }}
+  <div class="m-body">
+    <main class="m-main">
+      {{ range $.Page.Categories }}
+        <section class="m-cat" id="c{{ .ID }}" data-cat="c{{ .ID }}">
+          <h2 class="m-cat-title">
+            {{ if $d.ShowCategoryIcon }}{{ with .Icon }}<span class="m-cat-ico">{{ . }}</span>{{ end }}{{ end }}
+            {{ .Name $.Lang }}
+          </h2>
+          {{ with .Description $.Lang }}<p class="m-cat-desc">{{ . }}</p>{{ end }}
+
+          <div class="m-grid">
+            {{ range .Items }}
+              <article class="m-card {{ if .IsFeatured }}is-featured{{ end }}"
+                       data-name="{{ .Name $.Lang }}"
+                       data-desc="{{ .Description $.Lang }}">
+
+                {{ if and $d.ShowImages (ne $cards.ImagePos "none") }}
+                  <div class="m-card-media">
+                    {{ if .ImagePath }}
+                      <img src="{{ .ImagePath }}" alt="{{ .Name $.Lang }}" loading="lazy">
+                    {{ else }}
+                      <span class="m-card-noimg" aria-hidden="true">🍽</span>
+                    {{ end }}
+                    {{ if .HasDiscount }}
+                      <span class="m-off">{{ $.T "pub.off" ($.N .DiscountPercent) }}</span>
+                    {{ end }}
+                  </div>
+                {{ end }}
+
+                <div class="m-card-body">
+                  <h3 class="m-item-name">{{ .Name $.Lang }}</h3>
+
+                  {{ if $d.ShowDescriptions }}
+                    {{ with .Description $.Lang }}<p class="m-item-desc">{{ . }}</p>{{ end }}
+                  {{ end }}
+
+                  {{ if or (and $d.ShowTags .Tags) (and $d.ShowCalories .Calories) (and $d.ShowPrepTime .PrepMinutes) }}
+                    <div class="m-meta">
+                      {{ if $d.ShowTags }}
+                        {{ range .Tags }}<span class="m-tag">{{ $.T (printf "tag.%s" .) }}</span>{{ end }}
+                      {{ end }}
+                      {{ if and $d.ShowCalories .Calories }}
+                        <span class="m-meta-bit">{{ $.T "pub.calories" ($.N .Calories) }}</span>
+                      {{ end }}
+                      {{ if and $d.ShowPrepTime .PrepMinutes }}
+                        <span class="m-meta-bit">{{ $.T "pub.minutes" ($.N .PrepMinutes) }}</span>
+                      {{ end }}
+                    </div>
+                  {{ end }}
+
+                  {{ if $d.ShowPrices }}
+                    <div class="m-price">
+                      {{ if .HasDiscount }}
+                        <s>{{ $.Money .Price }}</s>
+                        <strong>{{ $.Money .DiscountPrice }}</strong>
+                      {{ else }}
+                        <strong>{{ $.Money .Price }}</strong>
+                      {{ end }}
+                    </div>
+                  {{ end }}
+                </div>
+              </article>
+            {{ end }}
+          </div>
+        </section>
+      {{ end }}
+
+      <p class="m-noresults" data-noresults hidden>{{ $.T "pub.search_empty" }}</p>
+    </main>
+  </div>
+  {{ end }}
+</div>
+{{ end }}
+
+
+{{/* ===================== opening hours ===================== */}}
+{{ define "sect_hours" }}
+{{ if and $.Page.Config.Display.ShowHours $.Page.Hours }}
+<div class="m-shell">
+  <section class="m-hours-card">
+    <h2 class="m-cat-title">{{ $.T "pub.hours" }}</h2>
+    <ul class="m-hours">
+      {{ $days := weekdays $.Lang }}
+      {{ range $.Page.Hours }}
+        <li>
+          <span>{{ index $days .DayOfWeek }}</span>
+          <span>{{ if .IsClosed }}{{ $.T "set.closed" }}{{ else }}{{ .OpensAt }} — {{ .ClosesAt }}{{ end }}</span>
+        </li>
+      {{ end }}
+    </ul>
+  </section>
+</div>
+{{ end }}
+{{ end }}
+
+
+{{/* ===================== footer ===================== */}}
+{{ define "sect_footer" }}
+{{ $v := $.Page.Venue }}
+{{ $d := $.Page.Config.Display }}
+{{ if $d.ShowFooter }}
+<footer class="m-foot">
+  <div class="m-foot-inner">
+    <div class="m-foot-col">
+      <h3>{{ $.T "pub.contact" }}</h3>
+      {{ with $v.Address $.Lang }}<p>{{ . }}</p>{{ end }}
+      {{ with $v.Phone }}<p><a href="tel:{{ . }}" dir="ltr">{{ $.N . }}</a></p>{{ end }}
+
+      {{ if $d.ShowSocial }}
+        <div class="m-social">
+          {{ with $v.Instagram }}<a href="https://instagram.com/{{ . }}" target="_blank" rel="noopener noreferrer">Instagram</a>{{ end }}
+          {{ with $v.Telegram }}<a href="https://t.me/{{ . }}" target="_blank" rel="noopener noreferrer">Telegram</a>{{ end }}
+          {{ with $v.WhatsApp }}<a href="https://wa.me/{{ . }}" target="_blank" rel="noopener noreferrer">WhatsApp</a>{{ end }}
+          {{ with $v.Website }}<a href="{{ . }}" target="_blank" rel="noopener noreferrer">{{ . }}</a>{{ end }}
+        </div>
+      {{ end }}
+    </div>
+
+    {{ with $v.Description $.Lang }}
+      <div class="m-foot-col">
+        <h3>{{ $v.Name $.Lang }}</h3>
+        <p>{{ . }}</p>
+      </div>
+    {{ end }}
+  </div>
+
+  <p class="m-credit">{{ $.T "pub.powered" ($.T "app.name") }}</p>
+</footer>
+{{ end }}
+{{ end }}

@@ -1,0 +1,101 @@
+{{ define "content" }}
+<header class="page-head">
+  <div>
+    <h1>{{ .T "dash.welcome" .User.DisplayName }}</h1>
+    <p class="muted">{{ .T "app.tagline" }}</p>
+  </div>
+  {{ if .Restaurant }}
+    <span class="badge {{ if .Restaurant.IsPublished }}badge-ok{{ else }}badge-warn{{ end }}">
+      {{ if .Restaurant.IsPublished }}{{ .T "dash.published" }}{{ else }}{{ .T "dash.unpublished" }}{{ end }}
+    </span>
+  {{ end }}
+</header>
+
+{{ if .Restaurant }}
+<section class="card link-card">
+  <div class="link-card-main">
+    <span class="field-label">{{ .T "dash.your_menu" }}</span>
+    <code class="menu-link" dir="ltr" data-copy-src>{{ .Page.MenuURL }}</code>
+  </div>
+  <div class="link-card-actions">
+    <button type="button" class="btn btn-quiet" data-copy data-copied="{{ .T "dash.copied" }}">
+      {{ .T "dash.copy_link" }}
+    </button>
+    <a class="btn btn-ghost" href="{{ .Page.MenuURL }}" target="_blank" rel="noopener">{{ .T "act.open" }}</a>
+  </div>
+</section>
+{{ end }}
+
+<section class="stat-row">
+  <div class="stat">
+    <span class="stat-n">{{ .N (len .Page.Categories) }}</span>
+    <span class="stat-l">{{ .T "dash.stat_cats" }}</span>
+  </div>
+  <div class="stat">
+    <span class="stat-n">{{ .N .Page.TotalItems }}</span>
+    <span class="stat-l">{{ .T "dash.stat_items" }}</span>
+  </div>
+  <div class="stat">
+    <span class="stat-n">{{ .N .Page.AvailableItems }}</span>
+    <span class="stat-l">{{ .T "dash.stat_available" }}</span>
+  </div>
+  <div class="stat">
+    <span class="stat-n">{{ .N .Page.PhotoCount }}</span>
+    <span class="stat-l">{{ .T "dash.stat_photos" }}</span>
+  </div>
+</section>
+
+{{ if .Page.IsEmpty }}
+<section class="card empty-state">
+  <div class="empty-ico">🍽</div>
+  <h2>{{ .T "dash.empty_title" }}</h2>
+  <p class="muted">{{ .T "dash.empty_body" }}</p>
+  <div class="row-actions">
+    <a class="btn btn-primary btn-lg" href="/panel/gallery">{{ .T "gal.tab_packs" }}</a>
+    <a class="btn btn-ghost" href="/panel/menu">{{ .T "dash.add_item" }}</a>
+  </div>
+  <p class="hint">{{ .T "gal.subtitle" }}</p>
+</section>
+{{ end }}
+
+<section>
+  <h2 class="section-title">{{ .T "dash.quick_actions" }}</h2>
+  <div class="quick-grid">
+    <a class="quick" href="/panel/menu">
+      <span class="quick-ico">☰</span>
+      <strong>{{ .T "nav.menu" }}</strong>
+      <small>{{ .T "menu.subtitle" }}</small>
+    </a>
+    <a class="quick quick-accent" href="/panel/theme">
+      <span class="quick-ico">◐</span>
+      <strong>{{ .T "dash.customize" }}</strong>
+      <small>{{ .T "theme.subtitle" }}</small>
+    </a>
+    <a class="quick" href="/panel/media">
+      <span class="quick-ico">▣</span>
+      <strong>{{ .T "nav.media" }}</strong>
+      <small>{{ .T "media.subtitle" }}</small>
+    </a>
+    <a class="quick" href="/panel/settings">
+      <span class="quick-ico">⚙</span>
+      <strong>{{ .T "nav.settings" }}</strong>
+      <small>{{ .T "set.subtitle" }}</small>
+    </a>
+  </div>
+</section>
+
+{{ if not .Page.IsEmpty }}
+<section>
+  <h2 class="section-title">{{ .T "menu.categories" }}</h2>
+  <div class="cat-summary">
+    {{ range .Page.Categories }}
+      <div class="cat-chip {{ if not .IsVisible }}is-off{{ end }}">
+        <span class="cat-chip-ico">{{ if .Icon }}{{ .Icon }}{{ else }}•{{ end }}</span>
+        <span class="cat-chip-name">{{ .Name $.Lang }}</span>
+        <span class="cat-chip-count">{{ $.N (len .Items) }}</span>
+      </div>
+    {{ end }}
+  </div>
+</section>
+{{ end }}
+{{ end }}

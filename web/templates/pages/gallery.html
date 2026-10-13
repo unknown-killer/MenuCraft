@@ -1,0 +1,90 @@
+{{ define "content" }}
+<header class="page-head">
+  <div>
+    <h1>{{ .T "gal.title" }}</h1>
+    <p class="muted">{{ .T "gal.subtitle" }}</p>
+  </div>
+</header>
+
+<div class="gal-tabs">
+  <a href="/panel/gallery?tab=packs"
+     class="gal-tab {{ if eq .Page.Tab "packs" }}is-active{{ end }}">
+    {{ .T "gal.tab_packs" }}
+  </a>
+  <a href="/panel/gallery?tab=themes"
+     class="gal-tab {{ if eq .Page.Tab "themes" }}is-active{{ end }}">
+    {{ .T "gal.tab_themes" }}
+  </a>
+</div>
+
+{{ if eq .Page.Tab "packs" }}
+  {{ $biz := .Page.Business }}
+  <div class="pack-grid">
+    {{ range .Page.Packs }}
+      <article class="pack {{ if eq .Business $biz }}is-suggested{{ end }}">
+        {{ if eq .Business $biz }}
+          <span class="pack-flag">{{ $.T "gal.for_you" }}</span>
+        {{ end }}
+
+        <header class="pack-head">
+          <strong>{{ if $.IsRTL }}{{ .LabelFa }}{{ else }}{{ .LabelEn }}{{ end }}</strong>
+          <small class="muted">{{ if $.IsRTL }}{{ .NoteFa }}{{ else }}{{ .NoteEn }}{{ end }}</small>
+        </header>
+
+        <div class="pack-stats">
+          <span>{{ $.T "gal.cats" ($.N (len .Groups)) }}</span>
+          <span>·</span>
+          <span>{{ $.T "gal.items" ($.N .ItemCount) }}</span>
+          <span>·</span>
+          <span class="pack-tier">
+            {{ if lt .Tier 0.9 }}{{ $.T "gal.tier_low" }}
+            {{ else if gt .Tier 1.2 }}{{ $.T "gal.tier_high" }}
+            {{ else }}{{ $.T "gal.tier_mid" }}{{ end }}
+          </span>
+        </div>
+
+        <ul class="pack-cats">
+          {{ range .Categories }}
+            <li><span>{{ .Icon }}</span>{{ if $.IsRTL }}{{ .NameFa }}{{ else }}{{ .NameEn }}{{ end }}</li>
+          {{ end }}
+        </ul>
+
+        <form method="post" action="/panel/gallery/apply" class="pack-form"
+              data-confirm="{{ $.T "gal.confirm" }}">
+          <input type="hidden" name="csrf_token" value="{{ $.CSRF }}">
+          <input type="hidden" name="pack" value="{{ .Key }}">
+
+          <label class="mini-check">
+            <input type="checkbox" name="with_theme" checked>
+            <span>{{ $.T "gal.with_theme" }}</span>
+          </label>
+          <label class="mini-check">
+            <input type="checkbox" name="replace">
+            <span>{{ $.T "gal.replace" }}</span>
+          </label>
+
+          <button type="submit" class="btn btn-primary btn-block btn-sm">{{ $.T "gal.apply" }}</button>
+        </form>
+      </article>
+    {{ end }}
+  </div>
+
+{{ else }}
+  <div class="theme-grid">
+    {{ range .Page.Presets }}
+      <form method="post" action="/panel/theme" class="theme-card">
+        <input type="hidden" name="csrf_token" value="{{ $.CSRF }}">
+        <input type="hidden" name="preset" value="{{ .Key }}">
+        <input type="hidden" name="preset_only" value="1">
+
+        <span class="theme-strip">
+          {{ range .Swatch }}<i style="background:{{ . }}"></i>{{ end }}
+        </span>
+        <strong>{{ if $.IsRTL }}{{ .LabelFa }}{{ else }}{{ .LabelEn }}{{ end }}</strong>
+        <small class="muted">{{ if $.IsRTL }}{{ .NoteFa }}{{ else }}{{ .NoteEn }}{{ end }}</small>
+        <button type="submit" class="btn btn-quiet btn-sm">{{ $.T "theme.apply_preset" }}</button>
+      </form>
+    {{ end }}
+  </div>
+{{ end }}
+{{ end }}

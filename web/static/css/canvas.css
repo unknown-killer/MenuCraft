@@ -1,0 +1,165 @@
+/* ==========================================================================
+   Free-form canvas sections.
+
+   The stage is a container query context, so every element's font size (set in
+   cqw) scales with the canvas rather than the viewport. That is what lets a
+   layout designed on a desktop hold its proportions on a phone.
+   ========================================================================== */
+
+.cv-stage {
+  position: relative;
+  container-type: inline-size;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--blk-radius, 0);
+  background-repeat: no-repeat;
+}
+
+.cv-veil {
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / var(--cv-overlay, .3));
+  pointer-events: none;
+  z-index: 0;
+}
+
+.cv-el {
+  position: absolute;
+  display: flex;
+  box-sizing: border-box;
+  padding: 0;
+  overflow: hidden;
+  text-decoration: none;
+  transform-origin: center;
+}
+
+.cv-text {
+  display: block;
+  width: 100%;
+  word-break: break-word;
+}
+
+.cv-image img,
+.cv-el img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.cv-fit-cover img   { object-fit: cover; }
+.cv-fit-contain img { object-fit: contain; }
+.cv-fit-fill img    { object-fit: fill; }
+
+/* A ring is a shape with only its border painted. */
+.cv-shape-ring { border-width: 0.6cqw; border-style: solid; }
+
+/* Links inside a canvas get a subtle affordance without breaking the design. */
+a.cv-el { transition: transform 220ms ease, filter 220ms ease; }
+a.cv-el:hover { filter: brightness(1.08); }
+a.cv-el:active { transform: scale(.98); }
+
+/* --- element entrance effects --- */
+.fx-anim .cv-fx-fade  { animation: cv-fade 600ms both; }
+.fx-anim .cv-fx-slide { animation: cv-slide 640ms cubic-bezier(.22,.61,.36,1) both; }
+.fx-anim .cv-fx-zoom  { animation: cv-zoom 620ms cubic-bezier(.22,.61,.36,1) both; }
+.cv-fx-float { animation: cv-float 6s ease-in-out infinite; }
+.cv-fx-pulse { animation: cv-pulse 2.6s ease-in-out infinite; }
+
+@keyframes cv-fade  { from { opacity: 0; } }
+@keyframes cv-slide { from { opacity: 0; transform: translateY(14%); } }
+@keyframes cv-zoom  { from { opacity: 0; transform: scale(.9); } }
+@keyframes cv-float { 50% { transform: translateY(-3%); } }
+@keyframes cv-pulse { 50% { transform: scale(1.04); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .cv-fx-float, .cv-fx-pulse { animation: none; }
+}
+
+/* ==========================================================================
+   Editor stage — only present inside the panel
+   ========================================================================== */
+
+.cv-edit { position: relative; }
+
+.cv-edit .cv-stage {
+  outline: 1px solid var(--line, #262a38);
+  cursor: default;
+  user-select: none;
+}
+
+/* Snap grid overlay */
+.cv-edit .cv-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: var(--cv-grid-op, 0);
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / .35) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / .35) 1px, transparent 1px);
+  background-size: 5% 5%;
+}
+
+.cv-edit .cv-el { cursor: move; }
+
+/* Selected element: outline plus eight resize handles. */
+.cv-el.is-selected {
+  outline: 2px solid #4d9fff;
+  outline-offset: 0;
+  z-index: 900 !important;
+}
+
+.cv-handle {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  background: #fff;
+  border: 2px solid #4d9fff;
+  border-radius: 2px;
+  z-index: 950;
+  box-sizing: border-box;
+}
+.cv-handle[data-h="nw"] { cursor: nwse-resize; }
+.cv-handle[data-h="n"]  { cursor: ns-resize; }
+.cv-handle[data-h="ne"] { cursor: nesw-resize; }
+.cv-handle[data-h="e"]  { cursor: ew-resize; }
+.cv-handle[data-h="se"] { cursor: nwse-resize; }
+.cv-handle[data-h="s"]  { cursor: ns-resize; }
+.cv-handle[data-h="sw"] { cursor: nesw-resize; }
+.cv-handle[data-h="w"]  { cursor: ew-resize; }
+
+/* Alignment guides shown while dragging. */
+.cv-guide {
+  position: absolute;
+  background: #ff3d8b;
+  z-index: 940;
+  pointer-events: none;
+}
+.cv-guide-v { width: 1px; top: 0; bottom: 0; }
+.cv-guide-h { height: 1px; left: 0; right: 0; }
+
+/* Live size/position readout that follows the drag. */
+.cv-readout {
+  position: absolute;
+  z-index: 960;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgb(10 11 16 / .9);
+  color: #fff;
+  font: 600 11px/1.4 ui-monospace, Consolas, monospace;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* Placeholder shown on an empty canvas. */
+.cv-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--text-3, #6f778e);
+  font-size: .86rem;
+  pointer-events: none;
+  text-align: center;
+  padding: 20px;
+}

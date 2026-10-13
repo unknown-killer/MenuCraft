@@ -1,0 +1,39 @@
+{{/*
+  Renders a free-form canvas section. Expects "cv" (a CanvasView) and "v" (the
+  root view). Geometry and styling come from the view's Go helpers, which have
+  already validated every value.
+*/}}
+{{ define "canvas" }}
+{{ $cv := .cv }}
+<div class="cv-stage" style="{{ $cv.StageStyle }}">
+  {{ if $cv.HasOverlay }}<span class="cv-veil" aria-hidden="true"></span>{{ end }}
+
+  {{ range $cv.Elements }}
+    {{ $link := $cv.Link . }}
+    {{/* data-id is what the editor uses to match a DOM node to its element. */}}
+    {{ if $link }}
+      <a class="{{ $cv.ElementClasses . }}" style="{{ $cv.ElementStyle . }}"
+         data-id="{{ .ID }}" href="{{ $link }}"
+         {{ if not (hasPrefix $link "#") }}{{ if not (hasPrefix $link "/") }}target="_blank" rel="noopener noreferrer"{{ end }}{{ end }}>
+        {{ template "cv_content" dict "cv" $cv "e" . }}
+      </a>
+    {{ else }}
+      <div class="{{ $cv.ElementClasses . }}" style="{{ $cv.ElementStyle . }}" data-id="{{ .ID }}">
+        {{ template "cv_content" dict "cv" $cv "e" . }}
+      </div>
+    {{ end }}
+  {{ end }}
+</div>
+{{ end }}
+
+
+{{ define "cv_content" }}
+{{ $cv := .cv }}{{ $e := .e }}
+{{ if eq (printf "%s" $e.Kind) "image" }}
+  {{ with $e.Image }}<img src="{{ . }}" alt="{{ $cv.Text $e }}" loading="lazy">{{ end }}
+{{ else if eq (printf "%s" $e.Kind) "shape" }}
+  {{/* purely decorative: styling carries the whole appearance */}}
+{{ else }}
+  <span class="cv-text">{{ $cv.Text $e }}</span>
+{{ end }}
+{{ end }}

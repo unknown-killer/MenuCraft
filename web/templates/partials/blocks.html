@@ -1,0 +1,75 @@
+{{/*
+  Renders one custom content block. Expects a dict of "b" (BlockView) and
+  "v" (the root view, for translations).
+*/}}
+{{ define "block" }}
+{{ $b := .b }}{{ $v := .v }}
+<section class="{{ $b.Classes }}{{ if not $b.IsVisible }} blk-hidden{{ end }}" style="{{ $b.InlineStyle }}">
+  <div class="blk-inner">
+
+    {{ if $b.Is "canvas" }}
+      {{ template "canvas" dict "cv" ($b.CanvasView $v.Lang) "v" $v }}
+
+    {{ else if $b.Is "divider" }}
+      <hr class="blk-rule">
+
+    {{ else if $b.Is "spacer" }}
+      <div class="blk-gap" aria-hidden="true"></div>
+
+    {{ else if $b.Is "image" }}
+      {{ with $b.ImagePath }}
+        <figure class="blk-figure">
+          <img src="{{ . }}" alt="{{ $b.Title $v.Lang }}" loading="lazy">
+          {{ with $b.Title $v.Lang }}<figcaption>{{ . }}</figcaption>{{ end }}
+        </figure>
+      {{ end }}
+
+    {{ else if $b.Is "gallery" }}
+      <div class="blk-gallery">
+        {{ range $b.GalleryImages }}
+          <img src="{{ . }}" alt="" loading="lazy">
+        {{ end }}
+      </div>
+      {{ with $b.Title $v.Lang }}<p class="blk-caption">{{ . }}</p>{{ end }}
+
+    {{ else if $b.Is "banner" }}
+      <div class="blk-banner-body">
+        {{ with $b.Title $v.Lang }}<h2 class="blk-title">{{ . }}</h2>{{ end }}
+        {{ range $b.Paragraphs }}<p class="blk-text">{{ . }}</p>{{ end }}
+        {{ with $b.SafeLink }}
+          <a class="blk-btn" href="{{ . }}" {{ if not (hasPrefix . "/") }}target="_blank" rel="noopener noreferrer"{{ end }}>
+            {{ with $b.LinkLabel $v.Lang }}{{ . }}{{ else }}{{ $v.T "act.open" }}{{ end }}
+          </a>
+        {{ end }}
+      </div>
+
+    {{ else if $b.Is "button" }}
+      {{ with $b.SafeLink }}
+        <a class="blk-btn" href="{{ . }}" {{ if not (hasPrefix . "/") }}target="_blank" rel="noopener noreferrer"{{ end }}>
+          {{ with $b.LinkLabel $v.Lang }}{{ . }}{{ else }}{{ $b.Title $v.Lang }}{{ end }}
+        </a>
+      {{ end }}
+
+    {{ else if $b.Is "quote" }}
+      <blockquote class="blk-quote">
+        {{ range $b.Paragraphs }}<p class="blk-text">{{ . }}</p>{{ end }}
+        {{ with $b.Title $v.Lang }}<cite>{{ . }}</cite>{{ end }}
+      </blockquote>
+
+    {{ else if $b.Is "heading" }}
+      {{ with $b.Title $v.Lang }}<h2 class="blk-title">{{ . }}</h2>{{ end }}
+      {{ range $b.Paragraphs }}<p class="blk-text">{{ . }}</p>{{ end }}
+
+    {{ else }}
+      {{ with $b.Title $v.Lang }}<h3 class="blk-title">{{ . }}</h3>{{ end }}
+      {{ range $b.Paragraphs }}<p class="blk-text">{{ . }}</p>{{ end }}
+      {{ with $b.SafeLink }}
+        <a class="blk-link" href="{{ . }}" {{ if not (hasPrefix . "/") }}target="_blank" rel="noopener noreferrer"{{ end }}>
+          {{ with $b.LinkLabel $v.Lang }}{{ . }}{{ else }}{{ . }}{{ end }}
+        </a>
+      {{ end }}
+    {{ end }}
+
+  </div>
+</section>
+{{ end }}

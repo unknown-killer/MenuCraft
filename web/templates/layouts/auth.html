@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="{{ .Locale.HTML }}" dir="{{ .Locale.Dir }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <title>{{ .Title }} · {{ .T "app.name" }}</title>
+  <link rel="icon" href="/static/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ .Asset "css/panel.css" }}">
+</head>
+<body class="auth-body {{ if .IsRTL }}is-rtl{{ else }}is-ltr{{ end }}">
+
+<div class="auth-aurora" aria-hidden="true">
+  <span></span><span></span><span></span>
+</div>
+
+<div class="auth-wrap">
+  <a class="auth-brand" href="/">
+    <span class="brand-mark">🍽</span>
+    <strong>{{ .T "app.name" }}</strong>
+  </a>
+
+  {{ if .Flash }}
+    <div class="flash flash-{{ .Flash.Kind }}" role="status"><span>{{ .Flash.Text }}</span></div>
+  {{ end }}
+
+  {{ template "content" . }}
+
+  <div class="auth-langs">
+    {{ $cur := .Lang }}
+    {{ range locales }}
+      <a href="/lang/{{ .Code }}" class="{{ if eq .Code $cur }}is-active{{ end }}">{{ .Name }}</a>
+    {{ end }}
+  </div>
+</div>
+
+<script src="{{ .Asset "js/panel.js" }}" defer></script>
+</body>
+</html>

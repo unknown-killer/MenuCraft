@@ -1,0 +1,206 @@
+/* ==========================================================================
+   Template gallery — ready-made menus and themes.
+   ========================================================================== */
+
+.gal-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 5px;
+  background: var(--surface);
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  width: fit-content;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.gal-tab {
+  padding: 9px 22px;
+  border-radius: 999px;
+  font-size: .89rem;
+  font-weight: 700;
+  color: var(--text-3);
+  white-space: nowrap;
+  transition: all var(--fast);
+}
+.gal-tab:hover { color: var(--text); }
+.gal-tab.is-active {
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  color: var(--brand-ink);
+  box-shadow: var(--sh-1);
+}
+
+/* --- ready-made menu packs --- */
+
+.pack-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 16px;
+}
+
+.pack {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-lg);
+  transition: transform var(--fast), border-color var(--fast), box-shadow var(--fast);
+}
+.pack:hover {
+  transform: translateY(-3px);
+  border-color: var(--line);
+  box-shadow: var(--sh-2);
+}
+
+/* Packs built for this venue type lead the grid and say so. */
+.pack.is-suggested {
+  border-color: rgb(240 178 63 / .35);
+  background: linear-gradient(165deg, rgb(240 178 63 / .07), var(--surface));
+}
+
+.pack-flag {
+  position: absolute;
+  top: -9px;
+  inset-inline-end: 16px;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  color: var(--brand-ink);
+  font-size: .68rem;
+  font-weight: 800;
+}
+
+.pack-head { display: flex; flex-direction: column; gap: 3px; }
+.pack-head strong { font-size: 1.02rem; }
+.pack-head small { font-size: .8rem; line-height: 1.5; }
+
+.pack-stats {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  font-size: .78rem;
+  color: var(--text-3);
+}
+.pack-tier {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  color: var(--text-2);
+  font-weight: 700;
+}
+
+.pack-cats {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  flex: 1;
+  align-content: flex-start;
+}
+.pack-cats li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: var(--bg-2);
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  font-size: .74rem;
+  color: var(--text-2);
+}
+
+.pack-form { display: flex; flex-direction: column; gap: 8px; margin: 0; }
+
+.mini-check {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: .78rem;
+  color: var(--text-2);
+  cursor: pointer;
+}
+.mini-check input { accent-color: var(--brand); width: 15px; height: 15px; }
+
+/* --- theme cards --- */
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+.theme-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r);
+  transition: all var(--fast);
+}
+.theme-card:hover { border-color: var(--brand); transform: translateY(-2px); }
+.theme-card strong { font-size: .9rem; }
+.theme-card small { font-size: .74rem; line-height: 1.45; flex: 1; }
+
+.theme-strip {
+  display: flex;
+  height: 46px;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+.theme-strip i { flex: 1; }
+
+/* --- custom CSS editor --- */
+
+.code-area {
+  font-family: var(--font-mono);
+  font-size: .82rem !important;
+  line-height: 1.7;
+  tab-size: 2;
+  min-height: 220px;
+  white-space: pre;
+  overflow-wrap: normal;
+  overflow-x: auto;
+}
+
+.css-help {
+  background: var(--bg-2);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-sm);
+  padding: 10px 14px;
+}
+.css-help > summary {
+  cursor: pointer;
+  font-size: .82rem;
+  font-weight: 700;
+  color: var(--text-2);
+}
+.css-help > summary:hover { color: var(--text); }
+
+.css-list {
+  list-style: none;
+  margin: 10px 0 6px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 5px;
+  font-size: .76rem;
+  color: var(--text-3);
+}
+.css-list code {
+  color: var(--brand);
+  background: var(--surface);
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+
+@media (max-width: 620px) {
+  .pack-grid { grid-template-columns: 1fr; }
+}

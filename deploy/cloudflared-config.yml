@@ -1,0 +1,20 @@
+# Cloudflare Tunnel configuration.
+#
+# Copy to ~/.cloudflared/config.yml (Windows: %USERPROFILE%\.cloudflared\config.yml)
+# and replace <TUNNEL-ID> and the hostname with your own.
+
+tunnel: <TUNNEL-ID>
+credentials-file: /root/.cloudflared/<TUNNEL-ID>.json
+
+ingress:
+  - hostname: menu.yourdomain.com
+    service: http://localhost:8080
+    originRequest:
+      # The app reads X-Forwarded-Proto to build absolute URLs for QR codes,
+      # so the origin must be told the public scheme is HTTPS.
+      httpHostHeader: menu.yourdomain.com
+      noTLSVerify: true
+      connectTimeout: 30s
+
+  # Every tunnel needs a catch-all rule as its last entry.
+  - service: http_status:404

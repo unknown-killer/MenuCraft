@@ -1,0 +1,62 @@
+{{/*
+  Reusable editor controls. Each expects a dict; see the theme page for callers.
+  Every input carries the form field name the theme handler parses.
+*/}}
+
+{{ define "ctl_color" }}
+<div class="ctl ctl-color">
+  <label class="ctl-label" for="f_{{ .name }}">{{ .label }}</label>
+  <div class="color-row">
+    <input type="color" id="f_{{ .name }}" name="{{ .name }}" value="{{ .value }}" data-color-sync>
+    <input type="text" class="color-hex" value="{{ .value }}" dir="ltr" spellcheck="false"
+           aria-label="{{ .label }}" data-color-hex maxlength="9">
+  </div>
+</div>
+{{ end }}
+
+{{ define "ctl_range" }}
+<div class="ctl ctl-range">
+  <div class="ctl-head">
+    <label class="ctl-label" for="f_{{ .name }}">{{ .label }}</label>
+    <output class="ctl-out" data-out-for="{{ .name }}">{{ .value }}{{ with .unit }}{{ . }}{{ end }}</output>
+  </div>
+  <input type="range" id="f_{{ .name }}" name="{{ .name }}"
+         min="{{ .min }}" max="{{ .max }}" step="{{ .step }}" value="{{ .value }}"
+         data-unit="{{ with .unit }}{{ . }}{{ end }}">
+</div>
+{{ end }}
+
+{{ define "ctl_seg" }}
+<div class="ctl ctl-seg">
+  <span class="ctl-label">{{ .label }}</span>
+  <div class="seg" role="radiogroup" aria-label="{{ .label }}">
+    {{ $name := .name }}{{ $val := .value }}
+    {{ range .options }}
+      <label class="seg-opt">
+        <input type="radio" name="{{ $name }}" value="{{ .k }}" {{ if eq $val .k }}checked{{ end }}>
+        <span>{{ .l }}</span>
+      </label>
+    {{ end }}
+  </div>
+</div>
+{{ end }}
+
+{{ define "ctl_select" }}
+<div class="ctl">
+  <label class="ctl-label" for="f_{{ .name }}">{{ .label }}</label>
+  <select id="f_{{ .name }}" name="{{ .name }}" class="input">
+    {{ $val := .value }}
+    {{ range .options }}
+      <option value="{{ .k }}" {{ if eq $val .k }}selected{{ end }}>{{ .l }}</option>
+    {{ end }}
+  </select>
+</div>
+{{ end }}
+
+{{ define "ctl_toggle" }}
+<label class="toggle">
+  <input type="checkbox" name="{{ .name }}" {{ if .checked }}checked{{ end }}>
+  <span class="toggle-track" aria-hidden="true"><span class="toggle-dot"></span></span>
+  <span class="toggle-text">{{ .label }}</span>
+</label>
+{{ end }}
