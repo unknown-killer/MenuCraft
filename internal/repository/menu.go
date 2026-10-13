@@ -1,13 +1,12 @@
 package repository
 
 import (
-	"ResturantMenue/internal/database"
 	"ResturantMenue/internal/models"
 )
 
 // --- categories ------------------------------------------------------------
 
-type CategoryRepo struct{ db *database.DB }
+type CategoryRepo struct{ db dbQuery }
 
 const categoryColumns = `
 	id, restaurant_id, name_fa, name_en, description_fa, description_en,
@@ -98,24 +97,20 @@ func (r *CategoryRepo) List(restaurantID int64) ([]*models.Category, error) {
 
 // Reorder persists a new ordering in one transaction.
 func (r *CategoryRepo) Reorder(restaurantID int64, orderedIDs []int64) error {
-	tx, err := r.db.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	for i, id := range orderedIDs {
-		if _, err := tx.Exec(`UPDATE categories SET sort_order = ? WHERE id = ? AND restaurant_id = ?`,
-			i+1, id, restaurantID); err != nil {
-			return err
+	return inTransaction(r.db, func(tx dbQuery) error {
+		for i, id := range orderedIDs {
+			if _, err := tx.Exec(`UPDATE categories SET sort_order = ? WHERE id = ? AND restaurant_id = ?`,
+				i+1, id, restaurantID); err != nil {
+				return err
+			}
 		}
-	}
-	return tx.Commit()
+		return nil
+	})
 }
 
 // --- items -----------------------------------------------------------------
 
-type ItemRepo struct{ db *database.DB }
+type ItemRepo struct{ db dbQuery }
 
 const itemColumns = `
 	id, restaurant_id, category_id, name_fa, name_en, description_fa, description_en,
@@ -202,19 +197,15 @@ func (r *ItemRepo) ToggleAvailable(id, restaurantID int64) error {
 }
 
 func (r *ItemRepo) Reorder(restaurantID int64, orderedIDs []int64) error {
-	tx, err := r.db.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	for i, id := range orderedIDs {
-		if _, err := tx.Exec(`UPDATE items SET sort_order = ? WHERE id = ? AND restaurant_id = ?`,
-			i+1, id, restaurantID); err != nil {
-			return err
+	return inTransaction(r.db, func(tx dbQuery) error {
+		for i, id := range orderedIDs {
+			if _, err := tx.Exec(`UPDATE items SET sort_order = ? WHERE id = ? AND restaurant_id = ?`,
+				i+1, id, restaurantID); err != nil {
+				return err
+			}
 		}
-	}
-	return tx.Commit()
+		return nil
+	})
 }
 
 // scanItem works with both *sql.Row.Scan and *sql.Rows.Scan.

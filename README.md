@@ -1,211 +1,120 @@
-# منوساز · MenuCraft
+# MenuCraft · منوساز
 
-سرویس منوی دیجیتال رستوران — پنل حرفه‌ای برای ساخت، مدیریت و شخصی‌سازی کامل منو.
+**A Persian/English digital restaurant menu, built with Go and SQLite.** Create a restaurant, organize dishes, customize its design, and share one public link or a printable QR code.
 
-A bilingual (Persian/English) digital menu service for restaurants, cafés, fast
-food, grill houses and teahouses. Written in Go with an embedded SQLite
-database and server-rendered templates — no Node, no build step, one binary.
+[راهنمای کامل فارسی](README.fa.md) · [Download releases](https://github.com/unknown-killer/MenuCraft/releases) · [Deployment](docs/DEPLOYMENT.md) · [WordPress](docs/WORDPRESS.md)
 
----
+![MenuCraft Persian menu](docs/screenshots/menu-fa.jpg)
 
-## اجرا · Running
+## What you can do
 
-```bash
+- Manage bilingual categories and dishes, prices, discounts, availability, featured dishes, dietary tags, calories and preparation time.
+- Choose from **114 appearance presets** and **54 complete menu packs** for restaurants, cafés, fast food, bakeries, juice bars and more; edit every dish and price afterward.
+- Customize colors, typography, backgrounds, layout, cards, light/dark mode and custom CSS with a live preview.
+- Arrange page sections and custom blocks; use the canvas designer for positioned text, images, buttons, shapes, icons and prices.
+- Upload images into a venue-scoped library; configure contact information, opening hours, currency and public slug.
+- Search Persian and English simultaneously, normalize Arabic/Persian letter variants, filter dietary tags, save favorites locally, sort prices within categories, share and print.
+- Export menu data as portable JSON or spreadsheet-friendly CSV. Import JSON by appending or explicitly replacing categories and dishes.
+- Publish in WordPress with the included plugin: a native imported menu or the live Go design in an iframe.
+
+The app has separate owner accounts and per-restaurant data isolation. This is a menu publishing system; it does not process orders, payments, reservations or deliveries.
+
+## Start in a minute
+
+### Windows
+
+Download the Windows ZIP for your CPU from [Releases](https://github.com/unknown-killer/MenuCraft/releases), extract it to a writable folder and double-click **run.bat**. Visit [localhost:8080](http://127.0.0.1:8080), register, and create your menu.
+
+### Linux
+
+Download the Linux archive for your CPU, then:
+
+```sh
+tar -xzf menucraft_1.1.0_linux_amd64.tar.gz
+cd menucraft_1.1.0_linux_amd64
+./run.sh
+```
+
+Open [localhost:8080](http://127.0.0.1:8080). The launch scripts bind to loopback by default. For a remote server, follow the [HTTPS deployment guide](docs/DEPLOYMENT.md).
+
+### From source
+
+Requires **Go 1.26.9 or newer**. No Node.js, PHP or C compiler is needed for the Go application.
+
+```sh
+go mod download
 go run .
 ```
 
-سپس مرورگر را باز کن روی <http://localhost:8080>
+The direct Go default listens on `:8080`; set `MENU_ADDR=127.0.0.1:8080` for local-only access. Assets, templates and the Vazirmatn font are embedded in release binaries. The app creates its SQLite database, signing key and uploads directory on first run.
 
-برای ساختن یک رستوران نمونه با منوی کامل فارسی:
+Optional local demonstration:
 
-```bash
+```sh
 go run ./cmd/seed
+go run .
 ```
 
-این دستور حساب `demo` با رمز `Demo1234` می‌سازد و منو را روی `/m/demo` منتشر می‌کند.
+Open `/m/demo`; sign in with `demo` / `Demo1234`. The seed command replaces the selected demo account's menu, so use a disposable development database. Production containers do **not** seed the demo by default.
 
-### انتشار عمومی · Deploying
+## First menu
 
-برای گرفتن یک لینک HTTPS که بدهی دست دیگران، [`deploy/README.md`](deploy/README.md)
-را ببین. خلاصه:
+1. Register and select the business type.
+2. Add categories/dishes or apply a ready-made menu pack.
+3. Adjust prices, availability, contact details and opening hours.
+4. Pick a theme, preview both languages and save.
+5. Publish in Settings, then share `/m/your-slug` or print `/m/your-slug/qr`.
 
-- **سریع‌ترین (۲ دقیقه، رایگان):** `cloudflared tunnel --url http://localhost:8080`
-- **لینک دائمی:** Fly.io با `deploy/fly.toml`
-- **سرور شخصی:** `docker compose -f deploy/docker-compose.yml up -d --build`
+Draft menus are visible only to their signed-in owner. Favorites stay in the visitor's browser and do not require an account. Dietary labels are entered by the restaurant.
 
-> Cloudflare **Workers** این پروژه را اجرا نمی‌کند — فایل‌سیستم و پروسه‌ی دائمی
-> ندارد، در حالی که این اپ یک باینری Go با SQLite روی دیسک است. Cloudflare
-> **Tunnel** اما دقیقاً همان لینک عمومی را می‌دهد.
+## Configuration
 
-### ساخت فایل اجرایی · Building a binary
+Set environment variables in your shell, service or container. The binary does not automatically load a `.env` file.
 
-```bash
-go build -o menu.exe .
-```
-
-باینری همه‌چیز (قالب‌ها، CSS، JS) را داخل خودش دارد؛ فقط پوشه‌های `data/` و
-`uploads/` کنارش ساخته می‌شوند.
-
----
-
-## تنظیمات · Configuration
-
-همه‌چیز پیش‌فرض کار می‌کند. برای تغییر، متغیرهای محیطی را ست کن:
-
-| متغیر | پیش‌فرض | توضیح |
+| Variable | Default | Purpose |
 |---|---|---|
-| `MENU_ADDR` | `:8080` | آدرس و پورت |
-| `MENU_DB` | `data/menu.db` | مسیر فایل دیتابیس |
-| `MENU_UPLOADS` | `uploads/` | پوشه تصاویر آپلودی |
-| `MENU_ENV` | `development` | در `production` کش فعال و کوکی‌ها `Secure` می‌شوند |
-| `MENU_LOCALE` | `fa` | زبان پیش‌فرض |
-| `MENU_MAX_UPLOAD` | `8388608` | حداکثر حجم آپلود (بایت) |
-| `MENU_SESSION_TTL` | `720h` | مدت اعتبار نشست |
+| `MENU_ADDR` | `:8080` | HTTP bind address |
+| `MENU_DB` | `data/menu.db` | SQLite file |
+| `MENU_UPLOADS` | `uploads` | Uploaded images |
+| `MENU_ENV` | `development` | Use `production` behind HTTPS; enables Secure cookies and embedded assets |
+| `MENU_PUBLIC_URL` | empty | Canonical origin, e.g. `https://menu.example.com`, for QR/export links |
+| `MENU_EMBED_ORIGINS` | empty | Comma-separated exact origins allowed to frame public menus |
+| `MENU_DISABLE_REGISTRATION` | `false` | Set `true` after creating owner accounts |
+| `MENU_SECRET` | generated | Optional signing secret, at least 32 bytes |
+| `MENU_LOCALE` | `fa` | Default language: `fa` or `en` |
+| `MENU_MAX_UPLOAD` | `8388608` | Image upload limit in bytes |
+| `MENU_SESSION_TTL` | `720h` | Signed session lifetime |
 
-کلید امضای نشست خودکار در `data/.secret` ساخته و نگه داشته می‌شود.
+The generated secret is stored as `.secret` beside the database. Keep it persistent along with the database and images. `/healthz` reports process liveness; `/readyz` also checks database connectivity.
 
-> **نکته شبکه:** اگر `proxy.golang.org` برایت باز نمی‌شود، پراکسی جایگزین را ست کن:
-> ```bash
-> go env -w GOPROXY=https://goproxy.io,direct GOSUMDB=off
-> ```
+## WordPress
 
----
+Upload `menucraft-wordpress_1.1.0.zip` from the release to **Plugins → Add New → Upload Plugin**, activate it, then open **Settings → MenuCraft**.
 
-## امکانات · Features
+- **Native mode:** export JSON from the Go panel, import it in WordPress and add `[menucraft_menu lang="fa"]` or `[menucraft_menu lang="en"]` to a page. It supports bilingual content, responsive cards, prices, search and categories.
+- **Live mode:** configure the published Go URL and permit the WordPress origin with `MENU_EMBED_ORIGINS` on the Go server.
 
-### پنل مدیریت
-- **داشبورد** — آمار منو، لینک عمومی و دسترسی سریع
-- **مدیریت منو** — دسته‌بندی و آیتم با نام/توضیح دوزبانه، قیمت، تخفیف، کالری،
-  زمان آماده‌سازی، برچسب (تند، گیاهی، پرفروش، پیشنهاد سرآشپز و…) و مرتب‌سازی
-  با کشیدن و رها کردن
-- **قالب‌های آماده منو** — ۱۲ بسته دسته‌بندی: رستوران ایرانی، غذای فرنگی،
-  فست‌فود، کافه، جگرکی، سفره‌خانه، نانوایی، بستنی، و بسته‌های مجزای
-  نوشیدنی/قلیان/دمنوش/صبحانه
-- **کتابخانه تصاویر** — آپلود با اعتبارسنجی محتوا (نه فقط پسوند)
-- **تنظیمات** — هویت مجموعه، آدرس، شبکه‌های اجتماعی، ساعات کاری، واحد پول،
-  نشانی منو و کد QR قابل چاپ
+Native mode imports a snapshot; it does not reproduce Go themes/canvas or synchronize future edits. Images remain linked to their original host unless moved to WordPress. Live mode requires the Go server to stay online. [Full setup and limitations](docs/WORDPRESS.md).
 
-### گالری منوهای آماده (`/panel/gallery`)
-**۵۴ منوی کامل و آماده** — نه فقط رنگ و گرادیان، بلکه منوی واقعی با غذا و قیمت:
+## Development and release
 
-- هر منو شامل دسته‌بندی‌ها، غذاها با نام فارسی و انگلیسی، توضیحات، قیمت،
-  برچسب، کالری و زمان آماده‌سازی است
-- برای هر نوع مجموعه حداقل ۴ منو: رستوران سنتی، کبابی، لوکس، دریایی، فرنگی،
-  خانگی، برگرخانه، پیتزریا، سوخاری، کافه تخصصی، صبحانه، شیرینی‌فروشی،
-  بستنی سنتی، آبمیوه، جگرکی، سفره‌خانه و…
-- سه سطح قیمت (اقتصادی / معمولی / لوکس) — یک غذا در کبابی خیابانی و رستوران
-  لوکس قیمت متفاوت دارد
-- با یک کلیک کل منو ساخته می‌شود و قالب ظاهری متناسبش هم اعمال می‌شود؛ بعد
-  فقط اسم‌ها و قیمت‌ها را عوض می‌کنی
-
-### CSS اختصاصی (`/panel/theme` ← بخش «کد CSS اختصاصی»)
-اگر طراحی اختصاصی خودت را داری، مستقیم CSS بنویس. بعد از استایل‌های قالب اعمال
-می‌شود پس همه‌چیز را می‌تواند بازنویسی کند. متغیرهای رنگ قالب
-(`var(--c-primary)` و بقیه) هم در دسترس‌اند.
-
-برای امنیت، این موارد حذف می‌شوند: `@import`، آدرس‌های خارجی داخل `url()`
-(که IP بازدیدکننده‌ها را به سرور غریبه لو می‌دهد)، `expression()`، و هر چیزی که
-بتواند از تگ `<style>` بیرون بزند. کل خطِ حاوی مورد مشکل‌دار حذف می‌شود، نه فقط
-خود کلمه، تا تکه‌های نصفه‌نیمه باقی نماند.
-
-### طراح آزاد (`/panel/design/canvas/new`)
-مثل دیزاینر ویژوال استودیو — المان را بگیر، هرجای بوم بینداز:
-
-- **۷ نوع المان**: عنوان، متن، تصویر، دکمه، شکل، آیکن، قیمت
-- **کشیدن و رها کردن آزاد** با ۸ دستگیره تغییر اندازه
-- **چسبندگی به شبکه** و **خطوط راهنمای هم‌ترازی** هنگام جابه‌جایی
-- **کنترل کامل هر المان**: مکان، اندازه، چرخش، قلم، ضخامت، رنگ، پس‌زمینه،
-  حاشیه، گردی، شفافیت، سایه، بلور، افکت ورود
-- تراز کردن، تکثیر، لایه‌بندی (جلو/عقب)، پنل لایه‌ها
-- کیبورد: جهت‌نما برای حرکت دقیق، `Shift`+جهت‌نما برای گام بزرگ،
-  `Ctrl+D` تکثیر، `Delete` حذف
-
-**واکنش‌گرایی:** مختصات به درصد و اندازه قلم به واحد `cqw` ذخیره می‌شود، پس
-طرحی که روی دسکتاپ می‌چینی دقیقاً با همان نسبت‌ها روی موبایل کوچک می‌شود —
-بدون نیاز به چیدن دوباره برای موبایل.
-
-### شخصی‌سازی ظاهر (`/panel/theme`)
-۱۳۷ کنترل در ۱۰ بخش، همه با **پیش‌نمایش زنده**:
-
-- **۱۱۴ قالب آماده** — حداقل ۱۰ قالب اختصاصی برای هر نوع مجموعه، که هم رنگ و
-  هم **ساختار چیدمان** فرق می‌کنند (نه فقط رنگ عوض‌شده)
-- **حالت روشن / تاریک / خودکار** با دو پالت مستقل؛ می‌توانی پالت تاریک را
-  خودکار از روی روشن بسازی و بعد دستی تنظیم کنی. در حالت خودکار منو با تنظیم
-  گوشی مشتری هماهنگ می‌شود و کلید تعویض هم دارد.
-- **رنگ‌ها** — ۱۱ رنگ مستقل با انتخابگر و کد هگز
-- **قلم و متن** — ۸ قلم فارسی، ۷ قلم انگلیسی، اندازه، ضخامت، فاصله خط و حروف
-- **پس‌زمینه** — رنگ ساده، گرادیان سه‌رنگ، تصویر (با تیرگی و بلور) یا الگو
-- **چیدمان** — شبکه‌ای/لیستی/مجله‌ای/فشرده، ستون، فاصله، عرض، تراکم، نوع منوی دسته‌بندی
-- **کارت‌ها** — سبک، گردی، سایه، حاشیه، نسبت و جای تصویر، افکت هاور
-- **سربرگ** — چهار سبک، ارتفاع کاور، اندازه و شکل لوگو
-- **نمایش المان‌ها** — ۱۲ کلید روشن/خاموش
-- **جلوه‌ها** — انیمیشن، شیشه‌ای، دانه‌ای، اسکرول نرم
-
-### طراحی صفحه (`/panel/design`)
-- **جابه‌جایی بخش‌ها با کشیدن و رها کردن** — سربرگ، جست‌وجو، منوی دسته‌بندی،
-  لیست غذاها، ساعات کاری و پاورقی را به هر ترتیبی بچین
-  (با کیبورد هم کار می‌کند: `Alt` + جهت‌نما)
-- **بلوک‌های سفارشی** — بوم طراحی آزاد، عنوان، متن، تصویر، بنر، گالری،
-  نقل‌قول، دکمه، خط جداکننده و فاصله؛ هر کدام با کنترل کامل روی اندازه،
-  چیدمان، ضخامت، رنگ، پس‌زمینه، عرض، فاصله داخلی، گردی، سایه و افکت ورود
-- بلوک‌ها را می‌شود بین بخش‌های ثابت هرجا که خواستی گذاشت
-
-### منوی عمومی (`/m/{slug}`)
-- کاملاً واکنش‌گرا، جست‌وجوی زنده، فیلتر دسته‌بندی و اسکرول‌اسپای
-- جست‌وجو حروف عربی و فارسی را یکسان می‌گیرد (`ك`/`ک` و `ي`/`ی`)
-- اعداد فارسی و واحد پول محلی
-- کد QR آماده چاپ روی `/m/{slug}/qr`
-
----
-
-## معماری · Architecture
-
-```
-main.go                    راه‌اندازی سرور و خاموشی تمیز
-cmd/seed/                  ساخت داده نمونه
-internal/
-  config/                  تنظیمات از متغیرهای محیطی
-  database/                اتصال SQLite + مهاجرت‌های embed شده
-  models/                  ساختارهای دامنه
-  repository/              تنها لایه‌ای که SQL می‌نویسد
-  auth/                    PBKDF2، کوکی امضاشده، CSRF
-  i18n/                    کاتالوگ فارسی/انگلیسی، اعداد و واحد پول
-  theme/                   موتور ظاهر: اعتبارسنجی، CSS، قالب‌ها، ترتیب بخش‌ها
-  menutemplate/            بسته‌های دسته‌بندی آماده
-  server/                  روتر، میان‌افزار و هندلرها
-web/
-  templates/               قالب‌های html/template
-  static/                  CSS و JS بدون هیچ ابزار بیلد
-```
-
-### تصمیم‌های فنی
-
-**پایگاه‌داده تک‌فایلی.** درایور `modernc.org/sqlite` خالص Go است، پس نیازی به
-CGO و کامپایلر C نیست. حالت WAL فعال است تا خواندن و نوشتن هم‌زمان قفل نکنند.
-
-**تولید CSS فقط در Go.** پیش‌نمایش زنده، تنظیمات فرم را به `/panel/theme/css`
-می‌فرستد و همان CSS‌ای را می‌گیرد که سرور واقعاً رندر می‌کند. این یعنی منطق
-ظاهر فقط یک‌جا وجود دارد و پیش‌نمایش هیچ‌وقت با نتیجه نهایی فرق نمی‌کند.
-
-**هر مقدار قبل از رسیدن به CSS اعتبارسنجی می‌شود.** تنظیمات ظاهر کاملاً
-دست کاربر است و مستقیم داخل `<style>` می‌نشیند، پس `theme.Sanitize` رنگ‌ها را
-فقط به‌صورت هگز می‌پذیرد، عددها را محدود می‌کند و رشته‌ها را با فهرست مجاز
-تطبیق می‌دهد. مسیر تصاویر هم باید زیر `/uploads/` و بدون `..` باشد.
-
-**آپلود بر اساس محتوا، نه پسوند.** بایت‌های اول فایل بررسی می‌شود؛ فایلی که
-خودش را `image/png` معرفی کند ولی PNG نباشد رد می‌شود. فایل‌ها با نام تصادفی
-در پوشه مخصوص همان رستوران ذخیره و با هدرهای `nosniff` و `sandbox` سرو می‌شوند.
-
-**نشست بدون جدول.** کوکی امضاشده با HMAC، به‌علاوه ستون `session_version` که با
-تغییر رمز عبور بالا می‌رود و همه نشست‌های قبلی را باطل می‌کند.
-
----
-
-## تست · Tests
-
-```bash
+```sh
 go test ./...
+go vet ./...
+go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
+go run ./cmd/release -version 1.1.0
 ```
 
-تست‌ها روی موتور ظاهر تمرکز دارند: اعتبار همه ۳۴ قالب، رد شدن مقادیر خطرناک
-(تزریق CSS و پیمایش مسیر)، و منطق مرتب‌سازی بخش‌های صفحه.
+The release command builds Windows/Linux binaries for **amd64 and arm64**, adds launch scripts and documentation, packages the WordPress plugin and writes `dist/SHA256SUMS.txt`. It requires Git and Go with verified module downloads; do not disable the Go checksum database.
+
+Tests cover authentication, CSRF, tenant isolation, private drafts, request limits, atomic registration/import/menu-pack operations, configuration, template rendering and the theme/catalogue engines. See [verification](docs/VERIFICATION.md), [architecture](docs/ARCHITECTURE.md) and [changelog](CHANGELOG.md).
+
+## Data and operations
+
+Menu JSON is a **content transfer format**, not a full backup. It omits accounts, passwords, signing secrets, uploaded image bytes, themes, canvas designs and opening-hours settings. For recovery, back up the database, uploads and signing key together using the [deployment guide](docs/DEPLOYMENT.md).
+
+SQLite is intended for a single server with persistent local storage. Horizontally scaling multiple application instances against a shared file is not supported by this deployment. There is no password-reset email integration; owners can change their password while signed in.
+
+## Attribution
+
+Vazirmatn is bundled under the SIL Open Font License. Go dependencies retain their upstream licenses; see [third-party notices](docs/THIRD_PARTY_NOTICES.md). This repository does not currently declare a license for the application's own source.

@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -93,21 +94,23 @@ func formStr(r *http.Request, key string) string {
 // formInt parses an integer form value, tolerating thousands separators and
 // Persian digits, which are both common in pasted prices.
 func formInt(r *http.Request, key string) int64 {
-	raw := normaliseDigits(formStr(r, key))
-	raw = strings.Map(func(rn rune) rune {
-		if rn >= '0' && rn <= '9' {
-			return rn
-		}
-		return -1
-	}, raw)
+	n, _ := parseWholeNumber(formStr(r, key))
+	return n
+}
+
+func parseWholeNumber(raw string) (int64, error) {
+	raw = normaliseDigits(strings.TrimSpace(raw))
+	raw = strings.NewReplacer(",", "", "٬", "", " ", "").Replace(raw)
 	if raw == "" {
-		return 0
+		return 0, nil
+	}
+	for _, c := range raw {
+		if c < '0' || c > '9' {
+			return 0, errors.New("expected non-negative whole number")
+		}
 	}
 	n, err := strconv.ParseInt(raw, 10, 64)
-	if err != nil {
-		return 0
-	}
-	return n
+	return n, err
 }
 
 func formBool(r *http.Request, key string) bool {
@@ -192,13 +195,19 @@ func safeNext(encoded string) string {
 		return "/panel/"
 	}
 	next := string(raw)
-	if !strings.HasPrefix(next, "/") || strings.HasPrefix(next, "//") {
+	if !safeLocalPath(next) {
 		return "/panel/"
 	}
 	if u, err := url.Parse(next); err != nil || u.Host != "" || u.Scheme != "" {
 		return "/panel/"
 	}
 	return next
+}
+
+func safeLocalPath(path string) bool {
+	decoded, err := url.PathUnescape(path)
+	return err == nil && strings.HasPrefix(decoded, "/") && !strings.HasPrefix(decoded, "//") &&
+		!strings.ContainsAny(decoded, "\\\r\n\x00")
 }
 
 // truncate shortens a string to n runes, for log lines and labels.

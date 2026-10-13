@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"ResturantMenue/internal/menudata"
 	"ResturantMenue/internal/menutemplate"
 	"ResturantMenue/internal/models"
 )
@@ -175,6 +176,17 @@ func (s *Server) handleItemSave(w http.ResponseWriter, r *http.Request) {
 		IsFeatured:    formBool(r, "is_featured"),
 		Calories:      int(formInt(r, "calories")),
 		PrepMinutes:   int(formInt(r, "prep_minutes")),
+	}
+	for _, key := range []string{"price", "discount_price", "calories", "prep_minutes"} {
+		if _, err := parseWholeNumber(formStr(r, key)); err != nil {
+			s.menuRedirect(w, r, "error", v.T("err.price"))
+			return
+		}
+	}
+	if item.Price > menudata.MaxPrice || item.DiscountPrice > menudata.MaxPrice ||
+		(item.DiscountPrice > 0 && item.DiscountPrice >= item.Price) || item.Calories > 100000 || item.PrepMinutes > 10080 {
+		s.menuRedirect(w, r, "error", v.T("err.price"))
+		return
 	}
 
 	id, _ := strconv.ParseInt(formStr(r, "id"), 10, 64)

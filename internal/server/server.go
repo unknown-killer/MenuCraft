@@ -24,22 +24,24 @@ func logf(format string, args ...any) { logger.Printf(format, args...) }
 
 // Server holds every dependency the handlers need.
 type Server struct {
-	cfg      *config.Config
-	store    *repository.Store
-	sessions *auth.Manager
-	render   *Renderer
-	mux      *http.ServeMux
-	assetVer string
+	cfg        *config.Config
+	store      *repository.Store
+	sessions   *auth.Manager
+	render     *Renderer
+	mux        *http.ServeMux
+	assetVer   string
+	authLimits *loginLimiter
 }
 
 func New(cfg *config.Config, store *repository.Store) *Server {
 	s := &Server{
-		cfg:      cfg,
-		store:    store,
-		sessions: auth.NewManager(cfg.SecretKey, cfg.SessionDuration, cfg.IsProduction()),
-		render:   NewRenderer(web.Templates(), !cfg.IsProduction()),
-		mux:      http.NewServeMux(),
-		assetVer: assetVersion(),
+		cfg:        cfg,
+		store:      store,
+		sessions:   auth.NewManager(cfg.SecretKey, cfg.SessionDuration, cfg.IsProduction()),
+		render:     NewRenderer(web.Templates(), !cfg.IsProduction()),
+		mux:        http.NewServeMux(),
+		assetVer:   assetVersion(),
+		authLimits: newLoginLimiter(),
 	}
 	s.routes()
 	return s
@@ -59,7 +61,7 @@ func assetVersion() string {
 
 // Handler returns the fully wrapped root handler.
 func (s *Server) Handler() http.Handler {
-	return s.recoverPanic(s.securityHeaders(s.mux))
+	return s.recoverPanic(s.securityHeaders(s.limitBody(s.mux)))
 }
 
 func (s *Server) routes() {
@@ -69,7 +71,7 @@ func (s *Server) routes() {
 
 	// User uploads are served from disk, never executed.
 	uploads := http.FileServer(http.Dir(s.cfg.UploadDir))
-	s.mux.Handle("GET /uploads/", http.StripPrefix("/uploads/", noSniff(uploads)))
+	s.mux.Handle("GET /uploads/", s.onlyUploadedFiles(http.StripPrefix("/uploads/", noSniff(uploads))))
 
 	// --- public ---
 	s.mux.HandleFunc("GET /{$}", s.handleLanding)
@@ -80,12 +82,13 @@ func (s *Server) routes() {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte("ok"))
 	})
+	s.mux.HandleFunc("GET /readyz", s.handleReadiness)
 
 	// --- auth ---
 	s.mux.HandleFunc("GET /login", s.handleLoginForm)
-	s.mux.HandleFunc("POST /login", s.handleLogin)
+	s.mux.Handle("POST /login", s.limitAuthentication(http.HandlerFunc(s.handleLogin)))
 	s.mux.HandleFunc("GET /register", s.handleRegisterForm)
-	s.mux.HandleFunc("POST /register", s.handleRegister)
+	s.mux.Handle("POST /register", s.limitAuthentication(http.HandlerFunc(s.handleRegister)))
 	s.mux.HandleFunc("POST /logout", s.handleLogout)
 
 	// --- panel (all require a session) ---
@@ -95,6 +98,9 @@ func (s *Server) routes() {
 
 	p("GET /panel/{$}", s.handleDashboard)
 	p("GET /panel/menu", s.handleMenuPage)
+	p("GET /panel/transfer", s.handleTransferPage)
+	p("GET /panel/menu/export", s.handleMenuExport)
+	p("POST /panel/menu/import", s.handleMenuImport)
 	p("POST /panel/menu/category", s.handleCategorySave)
 	p("POST /panel/menu/category/{id}/delete", s.handleCategoryDelete)
 	p("POST /panel/menu/category/reorder", s.handleCategoryReorder)

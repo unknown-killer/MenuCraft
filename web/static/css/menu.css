@@ -6,6 +6,7 @@
    .cards-glass switch between structural variants.
    ========================================================================== */
 
+@font-face { font-family: "Vazirmatn"; src: url("../fonts/Vazirmatn.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: swap; }
 *, *::before, *::after { box-sizing: border-box; }
 
 html { -webkit-text-size-adjust: 100%; }
@@ -37,7 +38,7 @@ s { opacity: .55; }
 
 /* --- background layers ---------------------------------------------------- */
 
-.bg-layer, .bg-pattern {
+.bg-layer, div.bg-pattern {
   position: fixed; inset: 0; z-index: -2; pointer-events: none;
 }
 
@@ -57,7 +58,7 @@ s { opacity: .55; }
   background: var(--bg-overlay, rgba(0,0,0,.5));
 }
 
-.bg-pattern {
+div.bg-pattern {
   z-index: -1;
   background-image: var(--bg-pattern, none);
   background-size: var(--bg-pattern-size, 22px) var(--bg-pattern-size, 22px);
@@ -490,4 +491,31 @@ s { opacity: .55; }
     transition-duration: .01ms !important;
   }
   html, .fx-anim { scroll-behavior: auto; }
+}
+
+/* Customer controls share the venue palette, and wrap on narrow screens. */
+[hidden] { display: none !important; }
+.m-tools { margin: 12px 0 24px; }
+.m-tool-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+.m-tool, .m-sort select { cursor: pointer; border: 1px solid var(--c-border); color: var(--c-text); background: var(--c-surface); border-radius: 12px; padding: 8px 13px; min-height: 44px; font: inherit; font-size: .85rem; }
+.m-tool[aria-pressed="true"] { background: var(--c-primary); color: var(--c-bg); border-color: var(--c-primary); }
+.m-sort { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: .8rem; }
+.m-tool-note, [data-result-count] { font-size: .8rem; color: var(--c-muted); }
+.m-tool-note { margin-top: 12px; }
+[data-result-count] { margin-inline-end: auto; }
+.m-favorite { align-self: flex-end; font-size: 1.15rem; line-height: 1; }
+.m-item-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.m-item-top .m-favorite { flex-shrink: 0; align-self: center; }
+.m-nav-item[aria-current="location"] { text-decoration: underline; text-underline-offset: 5px; }
+.m-skip { position: fixed; top: -100px; inset-inline-start: 12px; z-index: 100; padding: 12px 20px; background: var(--c-surface); color: var(--c-text); }
+.m-skip:focus { top: 12px; }
+@media print {
+  body { background: white !important; color: black !important; font-size: 11pt; }
+  .bg-layer,div.bg-pattern,.m-cover,.m-search,.m-tools,.m-nav,.m-langs,.m-favorite,.m-skip { display: none !important; }
+  .m-header,.m-header-inner,.m-shell { padding: 10px 0; margin: 0; width: 100%; }
+  .m-grid { display: block !important; }
+  .m-card { break-inside: avoid; box-shadow: none !important; background: white !important; color: black !important; border: 1px solid #ccc; margin: 8px 0; }
+  .m-item-name,.m-price,.m-price strong,.m-item-desc,.m-tag,.m-cat-title { color: black !important; }
+  .m-card-media { max-width: 100px; max-height: 100px; }
+  * { animation: none !important; transition: none !important; }
 }

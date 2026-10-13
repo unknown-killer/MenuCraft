@@ -1,11 +1,10 @@
 package repository
 
 import (
-	"ResturantMenue/internal/database"
 	"ResturantMenue/internal/models"
 )
 
-type RestaurantRepo struct{ db *database.DB }
+type RestaurantRepo struct{ db dbQuery }
 
 const restaurantColumns = `
 	id, user_id, slug, business_type,
@@ -16,9 +15,9 @@ const restaurantColumns = `
 
 func (r *RestaurantRepo) Create(v *models.Restaurant) error {
 	res, err := r.db.Exec(`
-		INSERT INTO restaurants (user_id, slug, business_type, name_fa, name_en, currency)
-		VALUES (?, ?, ?, ?, ?, ?)`,
-		v.UserID, v.Slug, v.BusinessType, v.NameFa, v.NameEn, v.Currency)
+		INSERT INTO restaurants (user_id, slug, business_type, name_fa, name_en, currency, is_published)
+		VALUES (?, ?, ?, ?, ?, ?, ?)`,
+		v.UserID, v.Slug, v.BusinessType, v.NameFa, v.NameEn, v.Currency, boolInt(v.IsPublished))
 	if err != nil {
 		return translateErr(err)
 	}
@@ -120,25 +119,21 @@ func (r *RestaurantRepo) WorkingHours(restaurantID int64) ([]*models.WorkingHour
 
 // SaveWorkingHours upserts the seven-day schedule in one transaction.
 func (r *RestaurantRepo) SaveWorkingHours(restaurantID int64, hours []*models.WorkingHour) error {
-	tx, err := r.db.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	for _, h := range hours {
-		if _, err := tx.Exec(`
+	return inTransaction(r.db, func(tx dbQuery) error {
+		for _, h := range hours {
+			if _, err := tx.Exec(`
 			INSERT INTO working_hours (restaurant_id, day_of_week, opens_at, closes_at, is_closed)
 			VALUES (?, ?, ?, ?, ?)
 			ON CONFLICT(restaurant_id, day_of_week) DO UPDATE SET
 				opens_at = excluded.opens_at,
 				closes_at = excluded.closes_at,
 				is_closed = excluded.is_closed`,
-			restaurantID, h.DayOfWeek, h.OpensAt, h.ClosesAt, boolInt(h.IsClosed)); err != nil {
-			return err
+				restaurantID, h.DayOfWeek, h.OpensAt, h.ClosesAt, boolInt(h.IsClosed)); err != nil {
+				return err
+			}
 		}
-	}
-	return tx.Commit()
+		return nil
+	})
 }
 
 func boolInt(b bool) int {

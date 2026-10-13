@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"ResturantMenue/internal/auth"
@@ -31,10 +32,11 @@ var businessTypes = []string{
 	string(models.BusinessTeahouse),
 	string(models.BusinessBakery),
 	string(models.BusinessIceCream),
+	string(models.BusinessJuiceBar),
 }
 
 func (s *Server) handleLoginForm(w http.ResponseWriter, r *http.Request) {
-	if _, err := s.sessions.Read(r); err == nil {
+	if s.currentUser(r) != nil {
 		http.Redirect(w, r, "/panel/", http.StatusSeeOther)
 		return
 	}
@@ -59,7 +61,7 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 
 	login := formStr(r, "login")
 	password := r.FormValue("password")
-	values := map[string]string{"login": login}
+	values := map[string]string{"login": login, "next": r.FormValue("next")}
 
 	user, err := s.store.Users.ByLogin(login)
 	if err != nil {
@@ -98,7 +100,11 @@ func mustHash(pw string) string {
 }
 
 func (s *Server) handleRegisterForm(w http.ResponseWriter, r *http.Request) {
-	if _, err := s.sessions.Read(r); err == nil {
+	if s.cfg.DisableRegistration {
+		http.NotFound(w, r)
+		return
+	}
+	if s.currentUser(r) != nil {
 		http.Redirect(w, r, "/panel/", http.StatusSeeOther)
 		return
 	}
@@ -109,6 +115,10 @@ func (s *Server) handleRegisterForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleRegister(w http.ResponseWriter, r *http.Request) {
+	if s.cfg.DisableRegistration {
+		http.NotFound(w, r)
+		return
+	}
 	v := s.newView(w, r)
 	v.Title = v.T("auth.register.title")
 
@@ -183,18 +193,17 @@ func (s *Server) handleRegister(w http.ResponseWriter, r *http.Request) {
 		Username: username, Email: email, PasswordHash: hash,
 		DisplayName: displayName, Locale: v.Locale.Code,
 	}
-	if err := s.store.Users.Create(user); err != nil {
+	if err := s.store.Transaction(func(tx *repository.Store) error {
+		if err := tx.Users.Create(user); err != nil {
+			return err
+		}
+		return (&Server{store: tx}).provisionRestaurant(user, venueName, bizType, v.Locale.Code)
+	}); err != nil {
 		if errors.Is(err, repository.ErrDuplicate) {
 			fail(v.T("err.taken"))
 			return
 		}
 		logf("register: create user: %v", err)
-		fail(v.T("err.generic"))
-		return
-	}
-
-	if err := s.provisionRestaurant(user, venueName, bizType, v.Locale.Code); err != nil {
-		logf("register: provision venue for user %d: %v", user.ID, err)
 		fail(v.T("err.generic"))
 		return
 	}
@@ -285,22 +294,16 @@ func (s *Server) handleSwitchLocale(w http.ResponseWriter, r *http.Request) {
 	i18n.SetCookie(w, code, s.cfg.IsProduction())
 
 	// Persist the choice on the account when someone is signed in.
-	if sess, err := s.sessions.Read(r); err == nil {
-		if u, err := s.store.Users.ByID(sess.UserID); err == nil {
-			u.Locale = i18n.Get(code).Code
-			if err := s.store.Users.UpdateProfile(u); err != nil {
-				logf("locale: persist for user %d: %v", u.ID, err)
-			}
+	if u := s.currentUser(r); u != nil {
+		u.Locale = i18n.Get(code).Code
+		if err := s.store.Users.UpdateProfile(u); err != nil {
+			logf("locale: persist for user %d: %v", u.ID, err)
 		}
 	}
 
-	back := r.Referer()
-	if back == "" || !strings.HasPrefix(back, "/") {
-		if u, err := parseSameSiteReferer(back); err == nil {
-			back = u
-		} else {
-			back = "/"
-		}
+	back, err := parseSameSiteReferer(r.Referer())
+	if err != nil {
+		back = "/"
 	}
 	http.Redirect(w, r, back, http.StatusSeeOther)
 }
@@ -311,23 +314,22 @@ func parseSameSiteReferer(ref string) (string, error) {
 	if ref == "" {
 		return "", errors.New("empty referer")
 	}
-	i := strings.Index(ref, "://")
-	if i < 0 {
-		return "", errors.New("not absolute")
+	u, err := url.Parse(ref)
+	if err != nil {
+		return "", err
 	}
-	rest := ref[i+3:]
-	slash := strings.Index(rest, "/")
-	if slash < 0 {
-		return "/", nil
+	path := u.RequestURI()
+	if !safeLocalPath(path) {
+		return "", errors.New("unsafe referer path")
 	}
-	return rest[slash:], nil
+	return path, nil
 }
 
 func (s *Server) renderAuthError(w http.ResponseWriter, v *View, mode, msg string, values map[string]string) {
 	if values == nil {
 		values = map[string]string{}
 	}
-	v.Page = &authPage{Mode: mode, Error: msg, Values: values, BusinessTypes: businessTypes}
+	v.Page = &authPage{Mode: mode, Error: msg, Next: values["next"], Values: values, BusinessTypes: businessTypes}
 	s.render.Render(w, http.StatusUnprocessableEntity, "auth", mode, v)
 }
 

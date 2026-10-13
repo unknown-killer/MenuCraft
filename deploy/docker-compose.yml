@@ -16,15 +16,17 @@ services:
       MENU_UPLOADS: /data/uploads
       MENU_LOCALE: fa
       TZ: Asia/Tehran
-      MENU_SEED_DEMO: "1"
+      MENU_SEED_DEMO: "0"
+      MENU_PUBLIC_URL: "${MENU_PUBLIC_URL:-}"
+      MENU_EMBED_ORIGINS: "${MENU_EMBED_ORIGINS:-}"
+      MENU_DISABLE_REGISTRATION: "${MENU_DISABLE_REGISTRATION:-false}"
     volumes:
       # Everything that must survive a redeploy: the database, the uploaded
       # images, and the session signing key.
       - menu_data:/data
-    # Only published when you are NOT using the tunnel below. Behind the
-    # tunnel, leave this commented out so nothing is exposed directly.
+    # Loopback only; put an HTTPS reverse proxy or tunnel in front.
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
       interval: 30s

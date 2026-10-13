@@ -182,7 +182,10 @@ func main() {
 	}
 
 	// A warm preset suits the demo content better than the default dark theme.
-	if err := store.Themes.Save(venue.ID, "saffron", theme.ApplyPreset("saffron")); err != nil {
+	demoTheme := theme.ApplyPreset("saffron")
+	demoTheme.Typography.FontFa = "vazir"
+	demoTheme.Background.PatternOpac = 0.12
+	if err := store.Themes.Save(venue.ID, "saffron", demoTheme); err != nil {
 		log.Fatalf("save theme: %v", err)
 	}
 

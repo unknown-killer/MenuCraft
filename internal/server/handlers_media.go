@@ -9,11 +9,24 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 
 	"ResturantMenue/internal/models"
 )
+
+var uploadRoute = regexp.MustCompile(`^/uploads/[0-9]+/[a-f0-9]{32}\.(jpg|png|gif|webp)$`)
+
+func (s *Server) onlyUploadedFiles(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !uploadRoute.MatchString(r.URL.Path) {
+			http.NotFound(w, r)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
 
 type mediaPage struct {
 	Items []*models.Media

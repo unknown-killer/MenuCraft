@@ -169,17 +169,6 @@ func (s *Server) handleSettingsSave(w http.ResponseWriter, r *http.Request) {
 		venue.Currency = cur
 	}
 
-	if err := s.store.Restaurants.Update(venue); err != nil {
-		if errors.Is(err, repository.ErrDuplicate) {
-			s.setFlash(w, "error", v.T("err.slug_taken"))
-		} else {
-			logf("settings: update venue %d: %v", venue.ID, err)
-			s.setFlash(w, "error", v.T("err.generic"))
-		}
-		http.Redirect(w, r, "/panel/settings", http.StatusSeeOther)
-		return
-	}
-
 	// Working hours arrive as seven parallel rows.
 	hours := make([]*models.WorkingHour, 0, 7)
 	for d := 0; d < 7; d++ {
@@ -192,8 +181,20 @@ func (s *Server) handleSettingsSave(w http.ResponseWriter, r *http.Request) {
 			IsClosed:     formBool(r, "closed_"+suffix),
 		})
 	}
-	if err := s.store.Restaurants.SaveWorkingHours(venue.ID, hours); err != nil {
-		logf("settings: hours for venue %d: %v", venue.ID, err)
+	if err := s.store.Transaction(func(tx *repository.Store) error {
+		if err := tx.Restaurants.Update(venue); err != nil {
+			return err
+		}
+		return tx.Restaurants.SaveWorkingHours(venue.ID, hours)
+	}); err != nil {
+		key := "err.generic"
+		if errors.Is(err, repository.ErrDuplicate) {
+			key = "err.slug_taken"
+		}
+		logf("settings: save venue %d: %v", venue.ID, err)
+		s.setFlash(w, "error", v.T(key))
+		http.Redirect(w, r, "/panel/settings", http.StatusSeeOther)
+		return
 	}
 
 	s.setFlash(w, "success", v.T("msg.saved"))

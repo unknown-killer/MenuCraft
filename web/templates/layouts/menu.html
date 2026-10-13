@@ -35,8 +35,10 @@
   {{ with .Page.Config.Custom }}<style id="custom-css">{{ customCSS . }}</style>{{ end }}
 </head>
 <body class="menu-body {{ .Page.BodyClass }}"
+      data-venue="{{ .Page.Venue.Slug }}"
       {{ if .Page.IsPreview }}data-preview="1"{{ end }}>
 
+<a class="m-skip" href="#menu-dishes">{{ .T "pub.skip" }}</a>
 <div class="bg-layer" aria-hidden="true"></div>
 <div class="bg-pattern" aria-hidden="true"></div>
 

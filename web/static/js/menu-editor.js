@@ -20,7 +20,13 @@
     const preview = document.querySelector(`[data-img-preview="${fieldId}"]`);
     if (preview) {
       preview.classList.toggle('is-empty', !path);
-      preview.innerHTML = path ? `<img src="${path}" alt="">` : '';
+      preview.replaceChildren();
+      if (path) {
+        const image = document.createElement('img');
+        image.src = path;
+        image.alt = '';
+        preview.append(image);
+      }
     }
   };
 

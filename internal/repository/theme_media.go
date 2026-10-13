@@ -1,14 +1,13 @@
 package repository
 
 import (
-	"ResturantMenue/internal/database"
 	"ResturantMenue/internal/models"
 	"ResturantMenue/internal/theme"
 )
 
 // --- themes ----------------------------------------------------------------
 
-type ThemeRepo struct{ db *database.DB }
+type ThemeRepo struct{ db dbQuery }
 
 // Get returns the stored theme, or the default one when the venue has never
 // been customised. It never fails just because a row is missing.
@@ -41,7 +40,7 @@ func (r *ThemeRepo) Save(restaurantID int64, preset string, cfg theme.Config) er
 
 // --- media -----------------------------------------------------------------
 
-type MediaRepo struct{ db *database.DB }
+type MediaRepo struct{ db dbQuery }
 
 func (r *MediaRepo) Create(m *models.Media) error {
 	res, err := r.db.Exec(`

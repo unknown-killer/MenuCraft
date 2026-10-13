@@ -10,10 +10,9 @@ ingress:
   - hostname: menu.yourdomain.com
     service: http://localhost:8080
     originRequest:
-      # The app reads X-Forwarded-Proto to build absolute URLs for QR codes,
-      # so the origin must be told the public scheme is HTTPS.
+      # Also set MENU_PUBLIC_URL=https://menu.yourdomain.com on MenuCraft.
+      # Forwarded request headers do not determine the canonical public URL.
       httpHostHeader: menu.yourdomain.com
-      noTLSVerify: true
       connectTimeout: 30s
 
   # Every tunnel needs a catch-all rule as its last entry.

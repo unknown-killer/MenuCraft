@@ -77,6 +77,30 @@
     <input type="search" placeholder="{{ $.T "pub.search" }}" aria-label="{{ $.T "pub.search" }}" data-search>
     <span class="m-search-ico" aria-hidden="true">⌕</span>
   </div>
+  <div class="m-tools" data-customer-tools hidden>
+    <div class="m-tool-row" role="group" aria-label="{{ $.T "pub.filters" }}">
+      <button type="button" class="m-tool" data-diet="vegetarian" aria-pressed="false">{{ $.T "tag.vegetarian" }}</button>
+      <button type="button" class="m-tool" data-diet="vegan" aria-pressed="false">{{ $.T "tag.vegan" }}</button>
+      <button type="button" class="m-tool" data-diet="glutenfree" aria-pressed="false">{{ $.T "tag.glutenfree" }}</button>
+      <button type="button" class="m-tool" data-favorites-only aria-pressed="false">♡ {{ $.T "pub.favorites" }}</button>
+      {{ if $.Page.Config.Display.ShowPrices }}
+      <label class="m-sort">{{ $.T "pub.sort" }}
+        <select data-sort>
+          <option value="default">{{ $.T "pub.sort_default" }}</option>
+          <option value="low">{{ $.T "pub.sort_low" }}</option>
+          <option value="high">{{ $.T "pub.sort_high" }}</option>
+        </select>
+      </label>
+      {{ end }}
+      <button type="button" class="m-tool" data-reset>{{ $.T "pub.reset" }}</button>
+    </div>
+    <p class="m-tool-note">{{ $.T "pub.diet_note" }}</p>
+    <div class="m-tool-row">
+      <span data-result-count data-label="{{ $.T "pub.results" }}" role="status" aria-live="polite"></span>
+      <button type="button" class="m-tool" data-share data-copied="{{ $.T "pub.copied" }}" data-failed="{{ $.T "pub.copy_failed" }}">{{ $.T "pub.share" }}</button>
+      <button type="button" class="m-tool" data-print>{{ $.T "pub.print" }}</button>
+    </div>
+  </div>
 </div>
 {{ end }}
 {{ end }}
@@ -87,9 +111,9 @@
 {{ if and (ne $.Page.Config.Layout.CategoryNav "none") $.Page.HasItems }}
 <div class="m-shell">
   <nav class="m-nav" data-nav>
-    <button type="button" class="m-nav-item is-active" data-filter="all">{{ $.T "pub.all" }}</button>
+    <button type="button" class="m-nav-item is-active" data-filter="all" aria-pressed="true">{{ $.T "pub.all" }}</button>
     {{ range $.Page.Categories }}
-      <button type="button" class="m-nav-item" data-filter="c{{ .ID }}">
+      <button type="button" class="m-nav-item" data-filter="c{{ .ID }}" aria-pressed="false">
         {{ if $.Page.Config.Display.ShowCategoryIcon }}{{ with .Icon }}<span class="m-nav-ico">{{ . }}</span>{{ end }}{{ end }}
         {{ .Name $.Lang }}
       </button>
@@ -105,7 +129,7 @@
 {{ $d := $.Page.Config.Display }}
 {{ $cards := $.Page.Config.Cards }}
 
-<div class="m-shell">
+<div class="m-shell" id="menu-dishes" tabindex="-1">
   {{ if not $.Page.HasItems }}
     <p class="m-empty">{{ $.T "pub.empty" }}</p>
   {{ else }}
@@ -122,8 +146,10 @@
           <div class="m-grid">
             {{ range .Items }}
               <article class="m-card {{ if .IsFeatured }}is-featured{{ end }}"
-                       data-name="{{ .Name $.Lang }}"
-                       data-desc="{{ .Description $.Lang }}">
+                       data-id="{{ .ID }}" data-price="{{ .EffectivePrice }}"
+                       data-tags="{{ range .Tags }}{{ . }} {{ end }}"
+                       data-name="{{ .NameFa }} {{ .NameEn }}"
+                       data-desc="{{ .DescriptionFa }} {{ .DescriptionEn }}">
 
                 {{ if and $d.ShowImages (ne $cards.ImagePos "none") }}
                   <div class="m-card-media">
@@ -139,7 +165,10 @@
                 {{ end }}
 
                 <div class="m-card-body">
-                  <h3 class="m-item-name">{{ .Name $.Lang }}</h3>
+                  <div class="m-item-top">
+                    <h3 class="m-item-name">{{ .Name $.Lang }}</h3>
+                    <button type="button" class="m-favorite m-tool" data-favorite="{{ .ID }}" aria-pressed="false" aria-label="{{ $.T "pub.favorite" }}: {{ .Name $.Lang }}" hidden>♡</button>
+                  </div>
 
                   {{ if $d.ShowDescriptions }}
                     {{ with .Description $.Lang }}<p class="m-item-desc">{{ . }}</p>{{ end }}
@@ -215,7 +244,7 @@
     <div class="m-foot-col">
       <h3>{{ $.T "pub.contact" }}</h3>
       {{ with $v.Address $.Lang }}<p>{{ . }}</p>{{ end }}
-      {{ with $v.Phone }}<p><a href="tel:{{ . }}" dir="ltr">{{ $.N . }}</a></p>{{ end }}
+      {{ with $v.Phone }}<p><a href="tel:{{ . }}" dir="ltr">{{ . }}</a></p>{{ end }}
 
       {{ if $d.ShowSocial }}
         <div class="m-social">

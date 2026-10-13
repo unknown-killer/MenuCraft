@@ -62,6 +62,7 @@ func (s *Server) requireAuth(next http.HandlerFunc) http.Handler {
 			s.failCSRF(w, r)
 			return
 		}
+		w.Header().Set("Cache-Control", "no-store")
 
 		ctx := context.WithValue(r.Context(), userCtxKey, user)
 		next.ServeHTTP(w, r.WithContext(ctx))
@@ -119,13 +120,25 @@ func (s *Server) securityHeaders(next http.Handler) http.Handler {
 		h.Set("X-Content-Type-Options", "nosniff")
 		h.Set("Referrer-Policy", "strict-origin-when-cross-origin")
 		h.Set("X-Frame-Options", "SAMEORIGIN")
+		ancestors := "frame-ancestors 'self'"
+		// Only public menu documents can be embedded. Admin and auth pages
+		// always retain their same-origin boundary.
+		if strings.HasPrefix(r.URL.Path, "/m/") && len(s.cfg.EmbedOrigins) > 0 {
+			ancestors += " " + strings.Join(s.cfg.EmbedOrigins, " ")
+			h.Del("X-Frame-Options")
+		}
+		h.Set("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+		if !strings.HasPrefix(r.URL.Path, "/static/") && !strings.HasPrefix(r.URL.Path, "/uploads/") {
+			h.Set("Cache-Control", "no-store")
+		}
 		h.Set("Content-Security-Policy", strings.Join([]string{
 			"default-src 'self'",
 			"img-src 'self' data: blob:",
 			"style-src 'self' 'unsafe-inline'",
 			script,
 			"font-src 'self' data:",
-			"frame-ancestors 'self'",
+			ancestors,
+			"object-src 'none'",
 			"base-uri 'self'",
 			"form-action 'self'",
 		}, "; "))
@@ -133,6 +146,54 @@ func (s *Server) securityHeaders(next http.Handler) http.Handler {
 		ctx := context.WithValue(r.Context(), nonceCtxKey, nonce)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+// Bound the body before FormValue, multipart parsing, or CSRF verification can
+// consume it. Parsing multipart later in the upload handler was already too late.
+func (s *Server) limitBody(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if isUnsafeMethod(r.Method) {
+			limit := int64(2 << 20)
+			if r.URL.Path == "/panel/media/upload" {
+				limit = s.cfg.MaxUploadBytes + (1 << 20)
+			}
+			if r.ContentLength > limit {
+				http.Error(w, "Request body too large", http.StatusRequestEntityTooLarge)
+				return
+			}
+			r.Body = http.MaxBytesReader(w, r.Body, limit)
+			defer func() {
+				if r.MultipartForm != nil {
+					_ = r.MultipartForm.RemoveAll()
+				}
+			}()
+			ct := r.Header.Get("Content-Type")
+			if strings.HasPrefix(ct, "multipart/form-data") || strings.HasPrefix(ct, "application/x-www-form-urlencoded") {
+				if err := parseForm(r); err != nil {
+					var maxErr *http.MaxBytesError
+					status := http.StatusBadRequest
+					if errors.As(err, &maxErr) {
+						status = http.StatusRequestEntityTooLarge
+					}
+					http.Error(w, http.StatusText(status), status)
+					return
+				}
+			}
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (s *Server) currentUser(r *http.Request) *models.User {
+	sess, err := s.sessions.Read(r)
+	if err != nil {
+		return nil
+	}
+	u, err := s.store.Users.ByID(sess.UserID)
+	if err != nil || u.SessionVersion != sess.Version {
+		return nil
+	}
+	return u
 }
 
 // recoverPanic keeps one bad request from taking the process down.

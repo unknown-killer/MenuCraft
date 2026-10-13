@@ -55,21 +55,24 @@ func HashPassword(password string) (string, error) {
 // VerifyPassword re-derives the key with the stored parameters and compares in
 // constant time.
 func VerifyPassword(password, encoded string) error {
+	if len(password) > 256 {
+		return ErrMismatch
+	}
 	parts := strings.Split(encoded, "$")
 	if len(parts) != 4 || parts[0] != "pbkdf2-sha256" {
 		return ErrInvalidHash
 	}
 
 	iterations, err := strconv.Atoi(parts[1])
-	if err != nil || iterations < 1000 {
+	if err != nil || iterations < 1000 || iterations > 2_000_000 {
 		return ErrInvalidHash
 	}
 	salt, err := base64.RawStdEncoding.DecodeString(parts[2])
-	if err != nil {
+	if err != nil || len(salt) != saltBytes {
 		return ErrInvalidHash
 	}
 	want, err := base64.RawStdEncoding.DecodeString(parts[3])
-	if err != nil {
+	if err != nil || len(want) != keyBytes {
 		return ErrInvalidHash
 	}
 

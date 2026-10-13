@@ -6,6 +6,7 @@ import (
 
 	"ResturantMenue/internal/menupack"
 	"ResturantMenue/internal/models"
+	"ResturantMenue/internal/repository"
 	"ResturantMenue/internal/theme"
 )
 
@@ -59,95 +60,109 @@ func (s *Server) handleApplyPack(w http.ResponseWriter, r *http.Request) {
 	}
 
 	venue := v.Restaurant
-
-	// "replace" wipes the current menu first. Categories cascade to items, so
-	// deleting them is enough.
-	if formBool(r, "replace") {
-		existing, err := s.store.Categories.List(venue.ID)
-		if err != nil {
-			logf("pack: list categories for venue %d: %v", venue.ID, err)
-			s.galleryRedirect(w, r, "error", v.T("err.generic"))
-			return
-		}
-		for _, c := range existing {
-			if err := s.store.Categories.Delete(c.ID, venue.ID); err != nil {
-				logf("pack: clear category %d: %v", c.ID, err)
-			}
-		}
-	}
-
-	// Skip categories the venue already has, so appending twice is harmless.
-	have := map[string]bool{}
-	if current, err := s.store.Categories.List(venue.ID); err == nil {
-		for _, c := range current {
-			have[strings.ToLower(strings.TrimSpace(c.NameFa))] = true
-			have[strings.ToLower(strings.TrimSpace(c.NameEn))] = true
-		}
-	}
-
 	items := 0
-	for _, g := range pack.Categories() {
-		if have[strings.ToLower(g.NameFa)] || have[strings.ToLower(g.NameEn)] {
-			continue
-		}
+	err := s.store.Transaction(func(tx *repository.Store) error {
+		local := *s
+		local.store = tx
+		s := &local
 
-		cat := &models.Category{
-			RestaurantID: venue.ID,
-			NameFa:       g.NameFa,
-			NameEn:       g.NameEn,
-			Icon:         g.Icon,
-			IsVisible:    true,
-		}
-		if err := s.store.Categories.Create(cat); err != nil {
-			logf("pack: create category %q: %v", g.NameEn, err)
-			continue
-		}
-
-		for _, d := range g.Dishes {
-			it := &models.Item{
-				RestaurantID:  venue.ID,
-				CategoryID:    cat.ID,
-				NameFa:        d.Fa,
-				NameEn:        d.En,
-				DescriptionFa: d.DescFa,
-				DescriptionEn: d.DescEn,
-				Price:         d.Price,
-				Tags:          d.Tags,
-				IsAvailable:   true,
-				Calories:      d.Cal,
-				PrepMinutes:   d.Min,
+		// "replace" wipes the current menu first. Categories cascade to items, so
+		// deleting them is enough.
+		if formBool(r, "replace") {
+			existing, err := s.store.Categories.List(venue.ID)
+			if err != nil {
+				logf("pack: list categories for venue %d: %v", venue.ID, err)
+				return err
 			}
-			if err := s.store.Items.Create(it); err != nil {
-				logf("pack: create item %q: %v", d.En, err)
+			for _, c := range existing {
+				if err := s.store.Categories.Delete(c.ID, venue.ID); err != nil {
+					logf("pack: clear category %d: %v", c.ID, err)
+					return err
+				}
+			}
+		}
+
+		// Skip categories the venue already has, so appending twice is harmless.
+		have := map[string]bool{}
+		if current, err := s.store.Categories.List(venue.ID); err == nil {
+			for _, c := range current {
+				have[strings.ToLower(strings.TrimSpace(c.NameFa))] = true
+				have[strings.ToLower(strings.TrimSpace(c.NameEn))] = true
+			}
+		} else {
+			return err
+		}
+
+		for _, g := range pack.Categories() {
+			if have[strings.ToLower(g.NameFa)] || have[strings.ToLower(g.NameEn)] {
 				continue
 			}
-			items++
-		}
-	}
 
-	// The pack's theme is half of what makes it look like its preview.
-	if formBool(r, "with_theme") && theme.IsPreset(pack.Theme) {
-		if err := s.store.Themes.Save(venue.ID, pack.Theme, theme.ApplyPreset(pack.Theme)); err != nil {
-			logf("pack: apply theme %q: %v", pack.Theme, err)
-		}
-	}
+			cat := &models.Category{
+				RestaurantID: venue.ID,
+				NameFa:       g.NameFa,
+				NameEn:       g.NameEn,
+				Icon:         g.Icon,
+				IsVisible:    true,
+			}
+			if err := s.store.Categories.Create(cat); err != nil {
+				logf("pack: create category %q: %v", g.NameEn, err)
+				return err
+			}
 
-	// Only fill in wording the owner has not written themselves.
-	changed := false
-	if strings.TrimSpace(venue.NameFa) == "" && strings.TrimSpace(venue.NameEn) == "" {
-		venue.NameFa, venue.NameEn = pack.NameFa, pack.NameEn
-		changed = true
-	}
-	if strings.TrimSpace(venue.TaglineFa) == "" && strings.TrimSpace(venue.TaglineEn) == "" {
-		venue.TaglineFa, venue.TaglineEn = pack.TaglineFa, pack.TaglineEn
-		changed = true
-	}
-	if changed {
-		if err := s.store.Restaurants.Update(venue); err != nil {
-			logf("pack: update venue wording: %v", err)
+			for _, d := range g.Dishes {
+				it := &models.Item{
+					RestaurantID:  venue.ID,
+					CategoryID:    cat.ID,
+					NameFa:        d.Fa,
+					NameEn:        d.En,
+					DescriptionFa: d.DescFa,
+					DescriptionEn: d.DescEn,
+					Price:         d.Price,
+					Tags:          d.Tags,
+					IsAvailable:   true,
+					Calories:      d.Cal,
+					PrepMinutes:   d.Min,
+				}
+				if err := s.store.Items.Create(it); err != nil {
+					logf("pack: create item %q: %v", d.En, err)
+					return err
+				}
+				items++
+			}
 		}
-	}
 
+		// The pack's theme is half of what makes it look like its preview.
+		if formBool(r, "with_theme") && theme.IsPreset(pack.Theme) {
+			if err := s.store.Themes.Save(venue.ID, pack.Theme, theme.ApplyPreset(pack.Theme)); err != nil {
+				logf("pack: apply theme %q: %v", pack.Theme, err)
+				return err
+			}
+		}
+
+		// Only fill in wording the owner has not written themselves.
+		changed := false
+		if strings.TrimSpace(venue.NameFa) == "" && strings.TrimSpace(venue.NameEn) == "" {
+			venue.NameFa, venue.NameEn = pack.NameFa, pack.NameEn
+			changed = true
+		}
+		if strings.TrimSpace(venue.TaglineFa) == "" && strings.TrimSpace(venue.TaglineEn) == "" {
+			venue.TaglineFa, venue.TaglineEn = pack.TaglineFa, pack.TaglineEn
+			changed = true
+		}
+		if changed {
+			if err := s.store.Restaurants.Update(venue); err != nil {
+				logf("pack: update venue wording: %v", err)
+				return err
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		s.galleryRedirect(w, r, "error", v.T("err.generic"))
+		return
+	}
 	s.galleryRedirect(w, r, "success", v.T("gal.applied", v.N(items)))
 }
 

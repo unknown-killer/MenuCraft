@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"math"
 	"strings"
 )
 
@@ -151,7 +152,7 @@ func (e *CanvasElement) Normalize() {
 	e.Radius = clampF(e.Radius, 0, 100, 0)
 	e.Blur = clampF(e.Blur, 0, 30, 0)
 
-	if e.Opacity <= 0 || e.Opacity > 1 {
+	if math.IsNaN(e.Opacity) || math.IsInf(e.Opacity, 0) || e.Opacity < 0 || e.Opacity > 1 {
 		e.Opacity = 1
 	}
 	e.Weight = clampI(e.Weight, 100, 900, 400)
@@ -221,6 +222,9 @@ func truncRunes(s string, n int) string {
 }
 
 func clampF(v, min, max, fallback float64) float64 {
+	if math.IsNaN(v) || math.IsInf(v, 0) {
+		return fallback
+	}
 	if v == 0 && fallback != 0 {
 		return fallback
 	}

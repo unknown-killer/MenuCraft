@@ -17,3 +17,11 @@ fly.toml
 .idea/
 .vscode/
 *.swp
+
+# Release outputs, local verification and downloaded developer tools
+dist/
+.tools/
+.qa/
+*.log
+.env
+coverage.out

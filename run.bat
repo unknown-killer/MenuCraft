@@ -3,6 +3,7 @@ REM Builds the menu service and starts it on http://localhost:8080
 REM Double-click this file, then open the address in your browser.
 
 cd /d "%~dp0"
+if not defined MENU_ADDR set MENU_ADDR=127.0.0.1:8080
 
 echo Building...
 go build -o menu.exe .

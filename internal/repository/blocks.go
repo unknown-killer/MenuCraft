@@ -1,11 +1,10 @@
 package repository
 
 import (
-	"ResturantMenue/internal/database"
 	"ResturantMenue/internal/models"
 )
 
-type BlockRepo struct{ db *database.DB }
+type BlockRepo struct{ db dbQuery }
 
 const blockColumns = `
 	id, restaurant_id, kind, title_fa, title_en, body_fa, body_en,

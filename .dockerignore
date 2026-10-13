@@ -12,6 +12,12 @@ uploads/
 .gitignore
 .idea/
 .vscode/
+.qa/
+.tools/
+dist/
+.env
+*.log
+docs/screenshots/
 
 # Docs and local tooling add nothing to the runtime image.
 README.md

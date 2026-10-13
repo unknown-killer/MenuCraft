@@ -118,12 +118,12 @@ func (m *Manager) verify(token string) (Session, error) {
 	userID, err1 := strconv.ParseInt(parts[0], 10, 64)
 	version, err2 := strconv.Atoi(parts[1])
 	expUnix, err3 := strconv.ParseInt(parts[2], 10, 64)
-	if err1 != nil || err2 != nil || err3 != nil {
+	if err1 != nil || err2 != nil || err3 != nil || userID < 1 || version < 1 {
 		return Session{}, ErrInvalidSession
 	}
 
 	expires := time.Unix(expUnix, 0)
-	if time.Now().After(expires) {
+	if !time.Now().Before(expires) {
 		return Session{}, ErrInvalidSession
 	}
 	return Session{UserID: userID, Version: version, Expires: expires}, nil
@@ -135,7 +135,7 @@ func (m *Manager) verify(token string) (Session, error) {
 // the cookie is missing. This is the double-submit pattern: the attacker's
 // site can trigger a request but cannot read the cookie to echo it back.
 func (m *Manager) IssueCSRF(w http.ResponseWriter, r *http.Request) string {
-	if c, err := r.Cookie(CSRFCookie); err == nil && len(c.Value) >= 32 {
+	if c, err := r.Cookie(CSRFCookie); err == nil && len(c.Value) == 32 {
 		return c.Value
 	}
 
@@ -161,13 +161,14 @@ func (m *Manager) IssueCSRF(w http.ResponseWriter, r *http.Request) string {
 // The token may arrive as a form field or as the X-CSRF-Token header.
 func (m *Manager) CheckCSRF(r *http.Request) bool {
 	c, err := r.Cookie(CSRFCookie)
-	if err != nil || len(c.Value) < 16 {
+	if err != nil || len(c.Value) != 32 {
 		return false
 	}
 
 	submitted := r.Header.Get("X-CSRF-Token")
 	if submitted == "" {
-		submitted = r.FormValue(CSRFField)
+		// Query parameters must never stand in for a token in the request body.
+		submitted = r.PostFormValue(CSRFField)
 	}
 	if submitted == "" {
 		return false

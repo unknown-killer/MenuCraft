@@ -3,11 +3,10 @@ package repository
 import (
 	"strings"
 
-	"ResturantMenue/internal/database"
 	"ResturantMenue/internal/models"
 )
 
-type UserRepo struct{ db *database.DB }
+type UserRepo struct{ db dbQuery }
 
 const userColumns = `id, username, email, password_hash, display_name, locale, session_version, created_at, updated_at`
 

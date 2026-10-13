@@ -1,94 +1,19 @@
-# اجرا روی Cloudflare — با Tunnel
+# Cloudflare Tunnel / تونل کلادفلر
 
-> **چرا Workers نه؟**
-> Cloudflare Workers کد جاوااسکریپت/WASM را روی V8 اجرا می‌کند: فایل‌سیستم ندارد،
-> پروسه‌ی دائمی نگه نمی‌دارد و کتابخانه‌های Go که به دیسک نیاز دارند روی آن اجرا
-> نمی‌شوند. این پروژه یک باینری Go با دیتابیس SQLite روی دیسک و آپلود فایل است،
-> پس روی Workers بالا نمی‌آید — برای آن باید کل بک‌اند با JS و D1 بازنویسی شود.
->
-> **Cloudflare Tunnel** اما دقیقاً همان چیزی را می‌دهد که می‌خواهی: یک آدرس
-> عمومی HTTPS روی شبکه‌ی Cloudflare، بدون باز کردن هیچ پورتی و بدون سرور.
+MenuCraft still runs on your computer or server with persistent SQLite storage. A tunnel forwards public HTTPS traffic to that running process; it does not host the application or keep an offline computer available.
 
----
+برنامه همچنان روی رایانه یا سرور شما اجرا می‌شود. تونل فقط ترافیک HTTPS را به آن می‌رساند؛ خاموش‌شدن میزبان، منو را از دسترس خارج می‌کند.
 
-## راه ۱ — تست فوری (بدون حساب، ۲ دقیقه)
+For a temporary local preview, run MenuCraft on `127.0.0.1:8080`, then use the official cloudflared client:
 
-برای وقتی که فقط می‌خواهی یک لینک موقت بدهی دست بازاریاب.
-
-**۱. برنامه را اجرا کن:**
-
-```bash
-go run .
+```sh
+cloudflared tunnel --url http://127.0.0.1:8080
 ```
 
-**۲. در یک ترمینال دیگر، `cloudflared` را بگیر و تونل بزن:**
+The generated URL is temporary. To make QR/export links correct, restart MenuCraft with `MENU_PUBLIC_URL` set to that exact HTTPS origin. Never use this preview with the default demo password on an unattended public deployment.
 
-```bash
-cloudflared tunnel --url http://localhost:8080
-```
+For a stable deployment, configure a named tunnel in your Cloudflare account and route its hostname to your running MenuCraft service. The Compose `tunnel` profile accepts `CLOUDFLARE_TUNNEL_TOKEN`; its tunnel route should point to `http://menu:8080` inside the Compose network. Keep the token outside Git.
 
-`cloudflared` یک آدرس مثل `https://random-words-1234.trycloudflare.com` چاپ
-می‌کند. همان را بفرست.
+Set `MENU_ENV=production`, the real `MENU_PUBLIC_URL`, and, if required, `MENU_EMBED_ORIGINS`. Follow [the deployment guide](../docs/DEPLOYMENT.md) for persistent storage, account setup and backups. `cloudflared-config.yml` is a template for a locally managed tunnel; replace its placeholder ID, credential path and hostname.
 
-> نکته: این آدرس تا وقتی ترمینال باز است کار می‌کند. لپ‌تاپ که خاموش شد، لینک
-> هم می‌میرد. برای تست کوتاه عالی است، برای تحویل واقعی نه.
-
-### نصب cloudflared روی ویندوز
-
-```bash
-winget install --id Cloudflare.cloudflared
-```
-
----
-
-## راه ۲ — تونل دائمی با دامنه‌ی خودت
-
-برای وقتی که می‌خواهی آدرس ثابت بماند (مثلاً `menu.yourdomain.com`).
-
-**پیش‌نیاز:** یک دامنه که در Cloudflare ثبت شده باشد.
-
-```bash
-# یک بار وارد شو
-cloudflared tunnel login
-
-# تونل بساز
-cloudflared tunnel create menucraft
-
-# دامنه را به تونل وصل کن
-cloudflared tunnel route dns menucraft menu.yourdomain.com
-```
-
-بعد فایل `deploy/cloudflared-config.yml` را بردار، `<TUNNEL-ID>` و دامنه را
-عوض کن و بگذارش در `~/.cloudflared/config.yml` (روی ویندوز:
-`%USERPROFILE%\.cloudflared\config.yml`)، سپس:
-
-```bash
-cloudflared tunnel run menucraft
-```
-
-برای اینکه با روشن شدن سیستم خودکار بالا بیاید:
-
-```bash
-cloudflared service install
-```
-
----
-
-## نکته‌ی مهم درباره‌ی کوکی‌ها
-
-وقتی پشت تونل هستی، ترافیک HTTPS است، پس حالت production را روشن کن تا
-کوکی‌ها `Secure` شوند:
-
-```bash
-MENU_ENV=production go run .
-```
-
-روی ویندوز در PowerShell:
-
-```powershell
-$env:MENU_ENV="production"; go run .
-```
-
-اگر بدون HTTPS (مستقیم روی `http://localhost`) با `MENU_ENV=production` اجرا
-کنی، مرورگر کوکی `Secure` را نمی‌پذیرد و ورود کار نمی‌کند. برای تست محلی
-`MENU_ENV` را ست نکن.
+برای استفادهٔ دائمی، تونل دارای نام و دامنهٔ خود را تنظیم کنید. کلید تونل را وارد گیت نکنید. تنظیمات production، دامنهٔ اصلی، داده‌های ماندگار و پشتیبان‌گیری همچنان لازم‌اند.

@@ -8,6 +8,7 @@ package theme
 
 import (
 	"encoding/json"
+	"math"
 	"strings"
 )
 
@@ -436,6 +437,9 @@ func clampInt(v, min, max, fallback int) int {
 }
 
 func clampFloat(v, min, max, fallback float64) float64 {
+	if math.IsNaN(v) || math.IsInf(v, 0) {
+		return fallback
+	}
 	if v == 0 && fallback != 0 {
 		return fallback
 	}
@@ -482,7 +486,7 @@ var faFontList = []Font{
 	{"shabnam", "شبنم", "Shabnam", `"Shabnam","Vazirmatn",Tahoma,sans-serif`},
 	{"sahel", "ساحل", "Sahel", `"Sahel","Vazirmatn",Tahoma,sans-serif`},
 	{"tahoma", "تاهوما", "Tahoma", `Tahoma,"Segoe UI",Arial,sans-serif`},
-	{"nazanin", "بی‌نازنین", "B Nazanin", `"B Nazanin","Nazanin","Times New Roman",serif`},
+	{"nazanin", "بی‌نازنین", "B Nazanin", `"B Nazanin","Nazanin","Vazirmatn",serif`},
 	{"lalezar", "لاله‌زار", "Lalezar", `"Lalezar","Vazirmatn",cursive,sans-serif`},
 	{"system", "پیش‌فرض سیستم", "System", `system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif`},
 }

@@ -6,6 +6,8 @@ package main
 import (
 	"context"
 	"errors"
+	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -19,7 +21,17 @@ import (
 	"ResturantMenue/internal/server"
 )
 
+var version = "dev"
+var commit = "unknown"
+var buildDate = "unknown"
+
 func main() {
+	showVersion := flag.Bool("version", false, "print build version and exit")
+	flag.Parse()
+	if *showVersion {
+		fmt.Printf("MenuCraft %s (%s, %s)\n", version, commit, buildDate)
+		return
+	}
 	log.SetFlags(log.LstdFlags)
 
 	cfg := config.Load()
@@ -47,7 +59,7 @@ func main() {
 	// Serve in the background so the main goroutine can wait for a signal.
 	errCh := make(chan error, 1)
 	go func() {
-		log.Printf("menu service listening on http://localhost%s (env=%s, db=%s)", cfg.Addr, cfg.Env, cfg.DatabasePath)
+		log.Printf("MenuCraft %s listening on %s (env=%s, db=%s)", version, cfg.Addr, cfg.Env, cfg.DatabasePath)
 		if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			errCh <- err
 		}

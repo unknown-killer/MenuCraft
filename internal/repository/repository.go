@@ -22,6 +22,7 @@ var (
 // Store bundles every repository behind one value passed to the handlers.
 type Store struct {
 	db          *database.DB
+	query       dbQuery
 	Users       *UserRepo
 	Restaurants *RestaurantRepo
 	Categories  *CategoryRepo
@@ -32,16 +33,53 @@ type Store struct {
 }
 
 func New(db *database.DB) *Store {
+	return newStore(db, db)
+}
+
+// dbQuery is implemented by both the connection pool and a transaction.
+type dbQuery interface {
+	Exec(string, ...any) (sql.Result, error)
+	Query(string, ...any) (*sql.Rows, error)
+	QueryRow(string, ...any) *sql.Row
+}
+
+func newStore(db *database.DB, query dbQuery) *Store {
 	return &Store{
 		db:          db,
-		Users:       &UserRepo{db},
-		Restaurants: &RestaurantRepo{db},
-		Categories:  &CategoryRepo{db},
-		Items:       &ItemRepo{db},
-		Themes:      &ThemeRepo{db},
-		Media:       &MediaRepo{db},
-		Blocks:      &BlockRepo{db},
+		query:       query,
+		Users:       &UserRepo{query},
+		Restaurants: &RestaurantRepo{query},
+		Categories:  &CategoryRepo{query},
+		Items:       &ItemRepo{query},
+		Themes:      &ThemeRepo{query},
+		Media:       &MediaRepo{query},
+		Blocks:      &BlockRepo{query},
 	}
+}
+
+func inTransaction(db dbQuery, fn func(dbQuery) error) error {
+	if _, ok := db.(*sql.Tx); ok {
+		return fn(db)
+	}
+	pool, ok := db.(interface{ Begin() (*sql.Tx, error) })
+	if !ok {
+		return errors.New("repository: connection cannot start transaction")
+	}
+	tx, err := pool.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if err := fn(tx); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+// Transaction commits all repository changes together, or rolls them all back.
+// A separate Store is used so concurrent requests never share the transaction.
+func (s *Store) Transaction(fn func(*Store) error) error {
+	return inTransaction(s.query, func(query dbQuery) error { return fn(newStore(s.db, query)) })
 }
 
 // DB exposes the connection for the rare cross-repository transaction.

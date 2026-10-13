@@ -46,7 +46,7 @@ type landingPage struct {
 func (s *Server) handleLanding(w http.ResponseWriter, r *http.Request) {
 	v := s.newView(w, r)
 	// A signed-in owner goes straight to their panel.
-	if _, err := s.sessions.Read(r); err == nil {
+	if s.currentUser(r) != nil {
 		http.Redirect(w, r, "/panel/", http.StatusSeeOther)
 		return
 	}
@@ -76,7 +76,8 @@ func (s *Server) renderPublicMenu(w http.ResponseWriter, r *http.Request, venue 
 
 	if !venue.IsPublished && !preview {
 		// The owner can still see their own draft.
-		if v.User == nil || v.User.ID != venue.UserID {
+		owner := s.currentUser(r)
+		if owner == nil || owner.ID != venue.UserID {
 			v.Title = v.T("pub.not_published")
 			v.Page = map[string]any{"Status": http.StatusNotFound, "Message": v.T("pub.not_published")}
 			s.render.Render(w, http.StatusNotFound, "auth", "error", v)
@@ -172,6 +173,13 @@ func (s *Server) handleQRCode(w http.ResponseWriter, r *http.Request) {
 		s.renderError(w, r, http.StatusNotFound)
 		return
 	}
+	if !venue.IsPublished {
+		owner := s.currentUser(r)
+		if owner == nil || owner.ID != venue.UserID {
+			http.NotFound(w, r)
+			return
+		}
+	}
 
 	size := 512
 	if n, err := strconv.Atoi(r.URL.Query().Get("size")); err == nil && n >= 128 && n <= 2048 {
@@ -186,7 +194,7 @@ func (s *Server) handleQRCode(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "image/png")
-	w.Header().Set("Cache-Control", "public, max-age=3600")
+	w.Header().Set("Cache-Control", "private, no-store")
 	if r.URL.Query().Get("download") != "" {
 		w.Header().Set("Content-Disposition", `attachment; filename="menu-qr-`+venue.Slug+`.png"`)
 	}
@@ -195,13 +203,13 @@ func (s *Server) handleQRCode(w http.ResponseWriter, r *http.Request) {
 
 // absoluteMenuURL builds the public URL a QR code should point at.
 func (s *Server) absoluteMenuURL(r *http.Request, slug string) string {
+	if s.cfg.PublicURL != "" {
+		return s.cfg.PublicURL + "/m/" + slug
+	}
 	scheme := "http"
-	if r.TLS != nil || strings.EqualFold(r.Header.Get("X-Forwarded-Proto"), "https") {
+	if r.TLS != nil {
 		scheme = "https"
 	}
 	host := r.Host
-	if fwd := r.Header.Get("X-Forwarded-Host"); fwd != "" {
-		host = fwd
-	}
 	return scheme + "://" + host + "/m/" + slug
 }

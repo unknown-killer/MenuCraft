@@ -1,11 +1,7 @@
 # Build stage ---------------------------------------------------------------
-FROM golang:1.26-alpine AS build
+FROM golang:1.26.9-alpine AS build
 
-# proxy.golang.org is unreachable from some networks; goproxy.io is the mirror
-# this project is developed against.
-ENV GOPROXY=https://goproxy.io,direct \
-    GOSUMDB=off \
-    CGO_ENABLED=0
+ENV CGO_ENABLED=0
 
 WORKDIR /src
 
@@ -21,7 +17,7 @@ RUN go build -trimpath -ldflags="-s -w" -o /out/menu . \
  && go build -trimpath -ldflags="-s -w" -o /out/seed ./cmd/seed
 
 # Runtime stage -------------------------------------------------------------
-FROM alpine:3.20
+FROM alpine:3.23
 
 # tzdata so opening-hours display in the venue's own timezone;
 # ca-certificates for any outbound HTTPS a future integration might need.
