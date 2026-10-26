@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.26.9'
+          go-version: '1.26.10'
       - run: go test ./...
       - run: go vet ./...
       - if: runner.os == 'Linux'
@@ -26,4 +26,6 @@ jobs:
           node --check web/static/js/menu.js
           node --check web/static/js/menu-editor.js
           node --check wordpress/menucraft/assets/menu.js
+          node --test scripts/notebook.test.cjs
+          node --check web/static/js/qr.js
 
