@@ -1,0 +1,32 @@
+{{define "content"}}
+<header class="site-header shell">
+ <a class="wordmark" href="/" aria-label="{{.Restaurant.Name .Lang}}"><span>{{.Restaurant.Name .Lang}}</span><small>CAFE RESTAURANT</small></a>
+ <nav aria-label="{{if .IsRTL}}دسترسی اصلی{{else}}Main navigation{{end}}">
+  <a href="#visit">{{if .IsRTL}}اطلاعات رستوران{{else}}Visit us{{end}}</a>
+  <a href="?lang={{if .IsRTL}}en{{else}}fa{{end}}" lang="{{if .IsRTL}}en{{else}}fa{{end}}">{{if .IsRTL}}EN{{else}}فارسی{{end}}</a>
+  <a class="nav-menu" href="/menu?lang={{.Lang}}">{{if .IsRTL}}مشاهدهٔ منو ↗{{else}}Explore menu ↗{{end}}</a>
+ </nav>
+</header>
+<main id="main">
+ <section class="hero shell">
+  <div class="hero-copy"><p class="eyebrow"><span></span>{{if .IsRTL}}به {{.Restaurant.Name .Lang}} خوش آمدید{{else}}WELCOME TO {{.Restaurant.Name .Lang}}{{end}}</p>
+   <h1>{{if .IsRTL}}برای لحظه‌های خوب،<br><em>با طعمی متفاوت.</em>{{else}}Good moments.<br><em>A different taste.</em>{{end}}</h1>
+   <p class="intro">{{.Restaurant.Description .Lang}}</p>
+   <div class="hero-actions"><a class="button" href="/menu?lang={{.Lang}}">{{if .IsRTL}}منو را ببینید{{else}}Explore our menu{{end}} <span aria-hidden="true">↗</span></a><a class="quiet-link" href="#visit">{{if .IsRTL}}ساعت کاری و نشانی ↓{{else}}Hours & location ↓{{end}}</a></div>
+   <p class="small-note">{{if .IsRTL}}بدون نصب برنامه؛ منو همیشه همراه شماست.{{else}}No app to install. Your menu, always at hand.{{end}}</p>
+  </div>
+  <div class="hero-art"><div class="orbit" aria-hidden="true"></div>{{if .Restaurant.LogoPath}}<img src="{{.Restaurant.LogoPath}}" width="1392" height="1137" alt="{{.Restaurant.Name .Lang}}" fetchpriority="high">{{else}}<span class="wordmark">{{.Restaurant.Name .Lang}}</span>{{end}}<span class="art-caption">GOOD FOOD · BETTER MOOD</span></div>
+ </section>
+ <div class="ritual-strip"><div class="shell"><span>{{if .IsRTL}}صبحانه{{else}}BREAKFAST{{end}}</span><i>✦</i><span>{{if .IsRTL}}ناهار{{else}}LUNCH{{end}}</span><i>✦</i><span>{{if .IsRTL}}شام{{else}}DINNER{{end}}</span><i>✦</i><span>{{if .IsRTL}}کافه{{else}}CAFE{{end}}</span></div></div>
+ <section class="visit shell" id="visit">
+  <div class="visit-title"><p class="eyebrow">{{if .IsRTL}}منتظر شما هستیم{{else}}VISIT US{{end}}</p><h2>{{if .IsRTL}}میزبان لحظه‌های شما{{else}}Make yourself at home{{end}}</h2><p>{{if .IsRTL}}منو را باز کنید، انتخاب‌هایتان را یادداشت کنید و به گارسون نشان دهید.{{else}}Open the menu, save your choices in the notebook, and show them to your waiter.{{end}}</p><a class="quiet-link gold" href="/menu?lang={{.Lang}}">{{if .IsRTL}}رفتن به منوی دیجیتال ←{{else}}Open the digital menu →{{end}}</a></div>
+  <div class="visit-details"><article><span class="detail-icon" aria-hidden="true">◷</span><div><h3>{{if .IsRTL}}ساعت کاری{{else}}Opening hours{{end}}</h3><p>{{ $days := weekdays $.Lang }}{{range .Page.Hours}}<span style="display:block">{{index $days .DayOfWeek}}: {{if .IsClosed}}{{$.T "set.closed"}}{{else}}{{.OpensAt}} — {{.ClosesAt}}{{end}}</span>{{else}}<a href="/menu">{{if .IsRTL}}مشاهدهٔ اطلاعات منو{{else}}View menu information{{end}}</a>{{end}}</p></div></article>
+   {{with .Restaurant.Address $.Lang}}<article><span class="detail-icon" aria-hidden="true">⌖</span><div><h3>{{if $.IsRTL}}نشانی{{else}}Location{{end}}</h3><p>{{.}}</p></div></article>{{end}}
+   {{with .Restaurant.Phones}}<article><span class="detail-icon" aria-hidden="true">☎</span><div><h3>{{if $.IsRTL}}تماس با ما{{else}}Contact us{{end}}</h3>{{range .}}<a class="contact-phone" href="tel:{{.}}" dir="ltr">{{.}}</a>{{end}}</div></article>{{end}}
+  </div>
+ </section>
+ 
+ <section class="closing shell"><span class="closing-star" aria-hidden="true">✦</span><h2>{{if .IsRTL}}انتخاب خوش‌طعم شما از اینجا شروع می‌شود.{{else}}Your next good meal starts here.{{end}}</h2><a class="button" href="/menu?lang={{.Lang}}">{{if .IsRTL}}ورود به منو{{else}}View the menu{{end}} ↗</a></section>
+</main>
+<footer class="shell"><span>{{.Restaurant.Name .Lang}}</span><p>{{.Restaurant.Tagline .Lang}}</p><a href="/login">{{if .IsRTL}}مدیریت{{else}}Management{{end}}</a></footer>
+{{end}}

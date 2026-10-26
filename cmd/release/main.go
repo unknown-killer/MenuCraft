@@ -21,7 +21,7 @@ import (
 )
 
 func main() {
-	version := flag.String("version", "1.1.0", "release version")
+	version := flag.String("version", "1.2.0", "release version")
 	output := flag.String("output", "dist", "output directory")
 	flag.Parse()
 	if *version == "" || strings.ContainsAny(*version, "/\\ \t\r\n") {
@@ -75,7 +75,7 @@ func build(version, output string) error {
 				return err
 			}
 		}
-		for _, file := range []string{"README.md", "README.fa.md", "README.en.md", "CHANGELOG.md", "docs/DEPLOYMENT.md", "docs/WORDPRESS.md", "docs/THIRD_PARTY_NOTICES.md", "docs/ARCHITECTURE.md", "docs/VERIFICATION.md", "docs/screenshots/menu-fa.jpg"} {
+		for _, file := range []string{"README.md", "README.fa.md", "README.en.md", "CHANGELOG.md", "docs/DEPLOYMENT.md", "docs/WORDPRESS.md", "docs/NOTEBOOK_AND_QR.md", "docs/THIRD_PARTY_NOTICES.md", "docs/ARCHITECTURE.md", "docs/VERIFICATION.md", "docs/screenshots/menu-fa.jpg"} {
 			if err := copyFile(file, filepath.Join(dir, file)); err != nil {
 				return err
 			}

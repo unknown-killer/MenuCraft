@@ -75,6 +75,10 @@ func (s *Server) routes() {
 
 	// --- public ---
 	s.mux.HandleFunc("GET /{$}", s.handleLanding)
+	s.mux.HandleFunc("GET /sitemap.xml", s.handleSitemap)
+	s.mux.HandleFunc("GET /robots.txt", s.handleRobots)
+	s.mux.HandleFunc("GET /menu", s.handleVenueMenu)
+	s.mux.HandleFunc("GET /menu/qr", s.handleVenueQR)
 	s.mux.HandleFunc("GET /m/{slug}", s.handlePublicMenu)
 	s.mux.HandleFunc("GET /m/{slug}/qr", s.handleQRCode)
 	s.mux.HandleFunc("GET /lang/{code}", s.handleSwitchLocale)
@@ -132,6 +136,7 @@ func (s *Server) routes() {
 	p("GET /panel/theme/preview", s.handleThemePreview)
 
 	p("GET /panel/settings", s.handleSettingsPage)
+	p("GET /panel/qr", s.handleQRStands)
 	p("POST /panel/settings", s.handleSettingsSave)
 	p("POST /panel/settings/password", s.handlePasswordChange)
 
@@ -152,6 +157,7 @@ type View struct {
 	ThemePreset string
 	Path        string
 	Title       string
+	SEO         *SEOData
 	Flash       *Flash
 	AssetVer    string
 	// Nonce authorises the single inline script the public menu needs.

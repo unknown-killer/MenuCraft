@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MenuCraft Restaurant Menu
  * Description: Persian/English restaurant menus: import a MenuCraft JSON snapshot or embed a live Go menu.
- * Version: 1.1.0
+ * Version: 1.2.0
  * Requires at least: 6.4
  * Requires PHP: 8.1
  * Author: unknown-killer
@@ -136,6 +136,8 @@ function menucraft_validate_menu($raw) {
                 $dish[$key]=$value;
             }
             if ($dish['discount_price']>0 && $dish['discount_price']>=$dish['price']) { return new WP_Error('price','Invalid discount.'); }
+            $dish['price_pending']=$item['price_pending'] ?? false;
+            if (!is_bool($dish['price_pending']) || ($dish['price_pending'] && ($dish['price']!==0 || $dish['discount_price']!==0))) { return new WP_Error('price','Invalid pending price.'); }
             $tags=$item['tags'] ?? array();
             if (!is_array($tags) || count($tags)>20) { return new WP_Error('tags','Invalid tags.'); }
             $dish['tags']=array_values(array_intersect(array_filter($tags,'is_string'),array('spicy','vegetarian','vegan','new','popular','chef','glutenfree','cold','hot')));
@@ -162,8 +164,10 @@ add_action('admin_post_menucraft_import', function () {
     exit;
 });
 add_action('wp_enqueue_scripts', function () {
-    wp_enqueue_style('menucraft',plugins_url('assets/menu.css',__FILE__),array(),'1.1.0');
-    wp_enqueue_script('menucraft',plugins_url('assets/menu.js',__FILE__),array(),'1.1.0',true);
+    wp_enqueue_style('menucraft',plugins_url('assets/menu.css',__FILE__),array(),'1.2.0');
+    wp_enqueue_script('menucraft',plugins_url('assets/menu.js',__FILE__),array(),'1.2.0',true);
+    wp_enqueue_style('menucraft-notebook',plugins_url('assets/notebook.css',__FILE__),array(),'1.2.0');
+    wp_enqueue_script('menucraft-notebook',plugins_url('assets/notebook.js',__FILE__),array(),'1.2.0',true);
 });
 function menucraft_pick($data,$field,$lang) {
     $primary=$data[$field.'_'.$lang] ?? '';
@@ -194,7 +198,9 @@ add_shortcode('menucraft_menu', function ($attributes) {
     $fa=$lang==='fa'; $currency=$data['restaurant']['currency'];
     $uid=wp_unique_id('menucraft-');
     ob_start(); ?>
-    <section class="menucraft" lang="<?php echo esc_attr($lang); ?>" dir="<?php echo $fa?'rtl':'ltr'; ?>">
+    <section class="menucraft" lang="<?php echo esc_attr($lang); ?>" dir="<?php echo $fa?'rtl':'ltr'; ?>"
+      data-notebook="wp-<?php echo esc_attr(hash('sha256',$data['restaurant']['name_fa'].'|'.$data['restaurant']['name_en'])); ?>"
+      data-note-venue="<?php echo esc_attr(menucraft_pick($data['restaurant'],'name',$lang)); ?>" data-note-currency="<?php echo esc_attr($currency==='IRT'?($fa?'تومان':'Toman'):($currency==='IRR'?($fa?'ریال':'Rial'):$currency)); ?>">
       <header class="menucraft-header"><span class="menucraft-eyebrow"><?php echo esc_html($fa?'منوی دیجیتال':'THE MENU'); ?></span>
         <h2><?php echo esc_html(menucraft_pick($data['restaurant'],'name',$lang)); ?></h2>
         <p><?php echo esc_html(menucraft_pick($data['restaurant'],'description',$lang)); ?></p>
@@ -219,13 +225,15 @@ add_shortcode('menucraft_menu', function ($attributes) {
           <h3><?php echo esc_html($cat['icon'].' '.menucraft_pick($cat,'name',$lang)); ?></h3>
           <p><?php echo esc_html(menucraft_pick($cat,'description',$lang)); ?></p>
           <div class="menucraft-grid">
-          <?php foreach ($items as $item) { ?>
-            <article class="menucraft-dish" data-mc-text="<?php echo esc_attr($item['name_fa'].' '.$item['name_en'].' '.$item['description_fa'].' '.$item['description_en']); ?>">
+          <?php foreach ($items as $item_index=>$item) { ?>
+            <article class="menucraft-dish" data-mc-text="<?php echo esc_attr($item['name_fa'].' '.$item['name_en'].' '.$item['description_fa'].' '.$item['description_en']); ?>"
+              data-note-item="<?php echo esc_attr(hash('sha256',$i.'|'.$item_index.'|'.wp_json_encode($item))); ?>" data-note-name="<?php echo esc_attr(menucraft_pick($item,'name',$lang)); ?>"
+              data-note-pending="<?php echo !empty($item['price_pending'])?'1':''; ?>" data-note-price="<?php echo esc_attr(!empty($item['price_pending'])?'':($item['discount_price']>0?$item['discount_price']:$item['price'])); ?>">
               <?php if ($item['image_url']) { ?><img src="<?php echo esc_url($item['image_url']); ?>" alt="<?php echo esc_attr(menucraft_pick($item,'name',$lang)); ?>" loading="lazy"><?php } ?>
-              <div><h4><?php echo esc_html(menucraft_pick($item,'name',$lang)); ?></h4>
+              <div data-note-actions><h4><?php echo esc_html(menucraft_pick($item,'name',$lang)); ?></h4>
                 <p><?php echo esc_html(menucraft_pick($item,'description',$lang)); ?></p>
                 <div class="menucraft-price"><?php if ($item['discount_price']>0) { ?><s><?php echo esc_html(menucraft_price($item['price'],$currency,$lang)); ?></s> <?php } ?>
-                  <strong><?php echo esc_html(menucraft_price($item['discount_price']>0?$item['discount_price']:$item['price'],$currency,$lang)); ?></strong>
+                  <strong><?php echo esc_html(!empty($item['price_pending'])?($fa?'قیمت به‌زودی':'Price coming soon'):menucraft_price($item['discount_price']>0?$item['discount_price']:$item['price'],$currency,$lang)); ?></strong>
                 </div>
               </div>
             </article>

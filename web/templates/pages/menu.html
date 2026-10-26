@@ -65,7 +65,7 @@
               </span>
 
               <span class="item-price">
-                {{ if .HasDiscount }}
+                {{ if .PricePending }}<strong>{{ $.T "pub.price_pending" }}</strong>{{ else if .HasDiscount }}
                   <s class="muted">{{ $.Money .Price }}</s>
                   <strong>{{ $.Money .DiscountPrice }}</strong>
                 {{ else }}
@@ -82,7 +82,7 @@
                 </form>
                 <button type="button" class="btn btn-quiet btn-sm"
                         data-open-item="{{ .CategoryID }}"
-                        data-item='{{ dict "id" .ID "category_id" .CategoryID "name_fa" .NameFa "name_en" .NameEn "description_fa" .DescriptionFa "description_en" .DescriptionEn "price" .Price "discount_price" .DiscountPrice "image_path" .ImagePath "tags" .Tags "is_available" .IsAvailable "is_featured" .IsFeatured "calories" .Calories "prep_minutes" .PrepMinutes | jsonAttr }}'>
+                        data-item='{{ dict "id" .ID "category_id" .CategoryID "name_fa" .NameFa "name_en" .NameEn "description_fa" .DescriptionFa "description_en" .DescriptionEn "price_pending" .PricePending "price" .Price "discount_price" .DiscountPrice "image_path" .ImagePath "tags" .Tags "is_available" .IsAvailable "is_featured" .IsFeatured "calories" .Calories "prep_minutes" .PrepMinutes | jsonAttr }}'>
                   {{ $.T "act.edit" }}
                 </button>
                 <form method="post" action="/panel/menu/item/{{ .ID }}/delete" class="inline"
@@ -238,6 +238,7 @@
         </label>
       </div>
 
+      <label class="check"><input type="checkbox" name="price_pending" value="1" data-f="price_pending"> {{ .T "menu.price_pending" }}</label>
       <div class="grid-2">
         <label class="field">
           <span class="field-label">{{ .T "menu.calories" }}</span>

@@ -37,6 +37,7 @@ type Item struct {
 	NameEn        string   `json:"name_en"`
 	DescriptionFa string   `json:"description_fa"`
 	DescriptionEn string   `json:"description_en"`
+	PricePending  bool     `json:"price_pending,omitempty"`
 	Price         int64    `json:"price"`
 	DiscountPrice int64    `json:"discount_price"`
 	ImagePath     string   `json:"image_path"`
@@ -57,7 +58,7 @@ func Export(venue *models.Restaurant, cats []*models.Category, source string) Do
 			DescriptionEn: c.DescriptionEn, Icon: c.Icon, Visible: c.IsVisible, Items: []Item{}}
 		for _, it := range c.Items {
 			out.Items = append(out.Items, Item{NameFa: it.NameFa, NameEn: it.NameEn,
-				DescriptionFa: it.DescriptionFa, DescriptionEn: it.DescriptionEn, Price: it.Price,
+				DescriptionFa: it.DescriptionFa, DescriptionEn: it.DescriptionEn, Price: it.Price, PricePending: it.PricePending,
 				DiscountPrice: it.DiscountPrice, ImagePath: it.ImagePath, Tags: it.Tags,
 				Available: it.IsAvailable, Featured: it.IsFeatured, Calories: it.Calories, PrepMinutes: it.PrepMinutes})
 		}
@@ -88,6 +89,7 @@ func (d Document) Validate() error {
 		}
 		for _, it := range c.Items {
 			if !namesValid(it.NameFa, it.NameEn) || len(it.DescriptionFa) > 8000 || len(it.DescriptionEn) > 8000 ||
+				(it.PricePending && (it.Price != 0 || it.DiscountPrice != 0)) ||
 				it.Price < 0 || it.Price > MaxPrice || it.DiscountPrice < 0 ||
 				(it.DiscountPrice > 0 && it.DiscountPrice >= it.Price) ||
 				it.Calories < 0 || it.Calories > 100000 || it.PrepMinutes < 0 || it.PrepMinutes > 10080 ||

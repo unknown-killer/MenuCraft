@@ -58,3 +58,14 @@ This keeps the complete current Go design and features, including updates made i
 | Menu appears narrow | Choose a wide/full-width page layout in your WordPress theme |
 
 Both integrations are display-only. No production WordPress account is required to build the ZIP. Installation on your live site is a separate administrator action.
+
+
+## Guest notebook / دفترچهٔ مشتری
+
+Version 1.2.0 adds a local guest notebook in native and live modes: quantities, notes, waiter view, copy and print. No order is submitted. [Guide](NOTEBOOK_AND_QR.md).
+
+<div dir="rtl" align="right">
+
+نسخهٔ ۱٫۲٫۰ دفترچهٔ محلی مشتری را در هر دو روش نمایش فراهم می‌کند: تعداد، یادداشت، نمای گارسون، کپی و چاپ. این فهرست سفارش ارسال نمی‌کند. [راهنما](NOTEBOOK_AND_QR.md).
+
+</div>

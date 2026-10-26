@@ -1,0 +1,35 @@
+{{ define "content" }}
+<header class="qr-controls">
+  <a href="/panel/settings">← {{ .T "qr.settings" }}</a>
+  <h1>{{ .T "qr.title" }}</h1><p>{{ .T "qr.intro" }}</p>
+  <form method="get" action="/panel/qr">
+    <input type="hidden" name="lang" value="{{ .Lang }}">
+    <label>{{ .T "qr.start" }}<input name="start" inputmode="numeric" pattern="[0-9۰-۹٠-٩]{1,4}" maxlength="4" value="{{ .Page.Start }}" required></label>
+    <label>{{ .T "qr.end" }}<input name="end" inputmode="numeric" pattern="[0-9۰-۹٠-٩]{1,4}" maxlength="4" value="{{ .Page.End }}" required></label>
+    <label>{{ .T "qr.layout" }}<select name="layout">{{ range list "above" "below" "left" "right" "tent" }}<option value="{{ . }}" {{ if eq $.Page.Layout . }}selected{{ end }}>{{ $.T (printf "qr.%s" .) }}</option>{{ end }}</select></label>
+    <button type="submit">{{ .T "qr.generate" }}</button>
+    {{ if .Page.Sheets }}<button type="button" data-print-stands>{{ .T "qr.print" }}</button>{{ end }}
+  </form>
+  {{ with .Page.Error }}<p role="alert" class="qr-warning">{{ . }}</p>{{ end }}
+  {{ if not .Page.Published }}<p class="qr-warning">{{ .T "qr.draft" }}</p>{{ end }}
+  <p class="qr-hint">{{ .T "qr.print_hint" }}</p><p class="qr-hint">{{ .T "qr.public_hint" }}</p>
+</header>
+<main class="qr-sheets">
+{{ range .Page.Sheets }}<div class="qr-sheet">
+  {{ range . }}<article class="qr-card qr-{{ $.Page.Layout }}">
+    {{ if eq $.Page.Layout "tent" }}<div class="qr-face qr-flipped">{{ template "qr_face" dict "v" $ "stand" . }}</div>{{ end }}
+    <div class="qr-face">{{ template "qr_face" dict "v" $ "stand" . }}</div>
+  </article>{{ end }}
+</div>{{ end }}
+</main>
+{{ end }}
+{{ define "qr_face" }}
+<div class="qr-venue">{{ .v.Restaurant.Name .v.Lang }}</div>
+{{with .v.Restaurant.LogoPath}}<img class="qr-logo" src="{{.}}" alt="" width="140" height="110">{{end}}
+<div class="qr-arrangement">
+  <div class="qr-number"><span>{{ .v.T "qr.table" }}</span><strong>{{ .v.N .stand.Number }}</strong></div>
+  <img class="qr-code" src="{{ .stand.Image }}" width="768" height="768" alt="{{ .v.T "qr.table" }} {{ .stand.Number }}">
+</div>
+<p class="qr-caption">{{ .v.T "qr.scan" }}</p>
+<a class="qr-address" href="{{ .stand.URL }}" dir="ltr">{{ .stand.URL }}</a>
+{{ end }}
