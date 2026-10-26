@@ -53,7 +53,7 @@
         {{ if $.Page.Config.Display.ShowLangSwitch }}
           {{ $cur := $.Lang }}
           {{ range locales }}
-            <a href="?lang={{ .Code }}" class="{{ if eq .Code $cur }}is-active{{ end }}">{{ .Name }}</a>
+            <a href="?lang={{ .Code }}{{ if $.Page.TableNumber }}&table={{ $.Page.TableNumber }}{{ end }}" class="{{ if eq .Code $cur }}is-active{{ end }}">{{ .Name }}</a>
           {{ end }}
         {{ end }}
         {{ if $.Page.Config.ShowModeToggle }}
@@ -146,7 +146,8 @@
           <div class="m-grid">
             {{ range .Items }}
               <article class="m-card {{ if .IsFeatured }}is-featured{{ end }}"
-                       data-id="{{ .ID }}" data-price="{{ .EffectivePrice }}"
+                       data-id="{{ .ID }}" data-price="{{ if not .PricePending }}{{ .EffectivePrice }}{{ end }}"
+                       data-note-item="{{ .ID }}" data-note-name="{{ .Name $.Lang }}" data-note-price="{{ if and $d.ShowPrices (not .PricePending) }}{{ .EffectivePrice }}{{ end }}" data-note-pending="{{if .PricePending}}1{{end}}"
                        data-tags="{{ range .Tags }}{{ . }} {{ end }}"
                        data-name="{{ .NameFa }} {{ .NameEn }}"
                        data-desc="{{ .DescriptionFa }} {{ .DescriptionEn }}">
@@ -164,7 +165,7 @@
                   </div>
                 {{ end }}
 
-                <div class="m-card-body">
+                <div class="m-card-body" data-note-actions>
                   <div class="m-item-top">
                     <h3 class="m-item-name">{{ .Name $.Lang }}</h3>
                     <button type="button" class="m-favorite m-tool" data-favorite="{{ .ID }}" aria-pressed="false" aria-label="{{ $.T "pub.favorite" }}: {{ .Name $.Lang }}" hidden>♡</button>
@@ -190,7 +191,7 @@
 
                   {{ if $d.ShowPrices }}
                     <div class="m-price">
-                      {{ if .HasDiscount }}
+                      {{ if .PricePending }}<strong>{{ $.T "pub.price_pending" }}</strong>{{ else if .HasDiscount }}
                         <s>{{ $.Money .Price }}</s>
                         <strong>{{ $.Money .DiscountPrice }}</strong>
                       {{ else }}
@@ -244,7 +245,7 @@
     <div class="m-foot-col">
       <h3>{{ $.T "pub.contact" }}</h3>
       {{ with $v.Address $.Lang }}<p>{{ . }}</p>{{ end }}
-      {{ with $v.Phone }}<p><a href="tel:{{ . }}" dir="ltr">{{ . }}</a></p>{{ end }}
+      {{ range $v.Phones }}<p><a href="tel:{{ . }}" dir="ltr">{{ . }}</a></p>{{ end }}
 
       {{ if $d.ShowSocial }}
         <div class="m-social">

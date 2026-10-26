@@ -115,7 +115,7 @@ type ItemRepo struct{ db dbQuery }
 const itemColumns = `
 	id, restaurant_id, category_id, name_fa, name_en, description_fa, description_en,
 	price, discount_price, image_path, tags, is_available, is_featured,
-	calories, prep_minutes, sort_order, created_at, updated_at`
+	calories, prep_minutes, sort_order, created_at, updated_at, price_pending`
 
 func (r *ItemRepo) Create(it *models.Item) error {
 	if it.SortOrder == 0 {
@@ -125,12 +125,12 @@ func (r *ItemRepo) Create(it *models.Item) error {
 	res, err := r.db.Exec(`
 		INSERT INTO items (restaurant_id, category_id, name_fa, name_en,
 			description_fa, description_en, price, discount_price, image_path,
-			tags, is_available, is_featured, calories, prep_minutes, sort_order)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			tags, is_available, is_featured, calories, prep_minutes, sort_order, price_pending)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		it.RestaurantID, it.CategoryID, it.NameFa, it.NameEn,
 		it.DescriptionFa, it.DescriptionEn, it.Price, it.DiscountPrice, it.ImagePath,
 		it.TagsJSON(), boolInt(it.IsAvailable), boolInt(it.IsFeatured),
-		it.Calories, it.PrepMinutes, it.SortOrder)
+		it.Calories, it.PrepMinutes, it.SortOrder, boolInt(it.PricePending))
 	if err != nil {
 		return translateErr(err)
 	}
@@ -148,13 +148,13 @@ func (r *ItemRepo) Update(it *models.Item) error {
 			category_id = ?, name_fa = ?, name_en = ?,
 			description_fa = ?, description_en = ?,
 			price = ?, discount_price = ?, image_path = ?, tags = ?,
-			is_available = ?, is_featured = ?, calories = ?, prep_minutes = ?,
+			is_available = ?, is_featured = ?, calories = ?, prep_minutes = ?, price_pending = ?,
 			updated_at = datetime('now')
 		WHERE id = ? AND restaurant_id = ?`,
 		it.CategoryID, it.NameFa, it.NameEn,
 		it.DescriptionFa, it.DescriptionEn,
 		it.Price, it.DiscountPrice, it.ImagePath, it.TagsJSON(),
-		boolInt(it.IsAvailable), boolInt(it.IsFeatured), it.Calories, it.PrepMinutes,
+		boolInt(it.IsAvailable), boolInt(it.IsFeatured), it.Calories, it.PrepMinutes, boolInt(it.PricePending),
 		it.ID, it.RestaurantID)
 	return translateErr(err)
 }
@@ -212,18 +212,19 @@ func (r *ItemRepo) Reorder(restaurantID int64, orderedIDs []int64) error {
 func scanItem(scan func(...any) error) (*models.Item, error) {
 	var it models.Item
 	var tags string
-	var available, featured int
+	var available, featured, pending int
 	var created, updated string
 	err := scan(&it.ID, &it.RestaurantID, &it.CategoryID, &it.NameFa, &it.NameEn,
 		&it.DescriptionFa, &it.DescriptionEn, &it.Price, &it.DiscountPrice, &it.ImagePath,
 		&tags, &available, &featured, &it.Calories, &it.PrepMinutes, &it.SortOrder,
-		&created, &updated)
+		&created, &updated, &pending)
 	if err != nil {
 		return nil, translateErr(err)
 	}
 	it.SetTagsJSON(tags)
 	it.IsAvailable = available == 1
 	it.IsFeatured = featured == 1
+	it.PricePending = pending == 1
 	it.CreatedAt = parseTime(created)
 	it.UpdatedAt = parseTime(updated)
 	return &it, nil

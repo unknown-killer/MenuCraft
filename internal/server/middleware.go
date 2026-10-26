@@ -117,13 +117,16 @@ func (s *Server) securityHeaders(next http.Handler) http.Handler {
 		}
 
 		h := w.Header()
+		if strings.HasPrefix(r.URL.Path, "/panel") || r.URL.Path == "/login" || r.URL.Path == "/register" || r.URL.Path == "/healthz" || r.URL.Path == "/readyz" || strings.HasSuffix(r.URL.Path, "/qr") {
+			h.Set("X-Robots-Tag", "noindex, nofollow")
+		}
 		h.Set("X-Content-Type-Options", "nosniff")
 		h.Set("Referrer-Policy", "strict-origin-when-cross-origin")
 		h.Set("X-Frame-Options", "SAMEORIGIN")
 		ancestors := "frame-ancestors 'self'"
 		// Only public menu documents can be embedded. Admin and auth pages
 		// always retain their same-origin boundary.
-		if strings.HasPrefix(r.URL.Path, "/m/") && len(s.cfg.EmbedOrigins) > 0 {
+		if (strings.HasPrefix(r.URL.Path, "/m/") || (r.URL.Path == "/menu" && s.cfg.VenueSlug != "")) && len(s.cfg.EmbedOrigins) > 0 {
 			ancestors += " " + strings.Join(s.cfg.EmbedOrigins, " ")
 			h.Del("X-Frame-Options")
 		}
@@ -137,6 +140,7 @@ func (s *Server) securityHeaders(next http.Handler) http.Handler {
 			"style-src 'self' 'unsafe-inline'",
 			script,
 			"font-src 'self' data:",
+			"frame-src 'self'",
 			ancestors,
 			"object-src 'none'",
 			"base-uri 'self'",

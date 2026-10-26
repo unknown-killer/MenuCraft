@@ -120,3 +120,17 @@ Run one application instance per database with persistent local storage. Do not 
 Money values are nonnegative whole units in the selected currency (for example whole toman), not fractional major units. Review example-pack prices and dietary tags before publishing.
 
 مقادیر پولی در این نسخه عدد صحیح در واحد انتخاب‌شده‌اند. قیمت‌های نمونه و برچسب‌های غذایی را پیش از انتشار بررسی کنید. تصاویر بارگذاری‌شده فایل عمومی هستند، حتی اگر منو هنوز پیش‌نویس باشد.
+
+## Single-venue site and search metadata
+
+Set `MENU_VENUE_SLUG` to an existing published restaurant slug and `MENU_PUBLIC_URL` to the public HTTPS origin (for example `https://menu.example.com`). Restart the service. `/` becomes a landing page using that venue's name, description, logo, phone numbers, address and saved hours; `/menu` and `/menu/qr` are short aliases. Separate phone numbers with `/`, commas or semicolons in settings.
+
+The public single-venue site defaults to Persian regardless of cookies or browser language. `?lang=en` selects English. `/sitemap.xml` contains four canonical language/page URLs, excluding table-specific links and private panel pages. Add it to your search console; indexing and rankings remain under the search engine's control. Canonical, hreflang, Open Graph and Restaurant JSON-LD metadata use the configured origin. Without single-venue settings, normal multi-venue routes remain available and no single-venue sitemap is exposed.
+
+Version 1.2.0 applies migration 004 for pending prices at startup. Back up before upgrading. To restore the older version completely, restore both the earlier executable and its pre-upgrade data backup. Public release packages contain no restaurant-specific credentials, menu data or brand assets.
+
+<div dir="rtl">
+
+برای سایت یک رستوران، شناسهٔ مجموعهٔ منتشرشده و دامنه را در متغیرهای بالا وارد و سرویس را دوباره اجرا کنید. صفحهٔ اصلی از اطلاعات و ساعت کاری ذخیره‌شدهٔ مجموعه استفاده می‌کند؛ منو از مسیر کوتاه در دسترس است و فارسی پیش‌فرض خواهد بود. نقشهٔ سایت را در کنسول جست‌وجو ثبت کنید. در چاپ، گزینهٔ تصاویر پس‌زمینه را روشن کنید. پیش از ارتقا از داده‌ها و تصاویر و کلید نشست پشتیبان بگیرید.
+
+</div>

@@ -15,15 +15,16 @@ import (
 )
 
 type publicPage struct {
-	Venue      *models.Restaurant
-	Categories []*models.Category
-	Hours      []*models.WorkingHour
-	Config     theme.Config
-	CSSVars    template.CSS
-	BodyClass  string
-	IsPreview  bool
-	MenuURL    string
-	HasItems   bool
+	Venue       *models.Restaurant
+	Categories  []*models.Category
+	Hours       []*models.WorkingHour
+	Config      theme.Config
+	CSSVars     template.CSS
+	BodyClass   string
+	IsPreview   bool
+	MenuURL     string
+	HasItems    bool
+	TableNumber string
 
 	// Sections is the page in the owner's drag-and-drop order. The template
 	// walks this instead of hard-coding the layout.
@@ -44,6 +45,10 @@ type landingPage struct {
 }
 
 func (s *Server) handleLanding(w http.ResponseWriter, r *http.Request) {
+	if s.cfg.VenueSlug != "" {
+		s.handleVenueLanding(w, r)
+		return
+	}
 	v := s.newView(w, r)
 	// A signed-in owner goes straight to their panel.
 	if s.currentUser(r) != nil {
@@ -73,6 +78,12 @@ func (s *Server) handlePublicMenu(w http.ResponseWriter, r *http.Request) {
 // iframe: it bypasses the published check and injects the live-update hook.
 func (s *Server) renderPublicMenu(w http.ResponseWriter, r *http.Request, venue *models.Restaurant, preview bool) {
 	v := s.newView(w, r)
+	if !preview {
+		s.publicLocale(v, r, venue)
+	}
+	if preview || !venue.IsPublished {
+		w.Header().Set("X-Robots-Tag", "noindex, nofollow")
+	}
 
 	if !venue.IsPublished && !preview {
 		// The owner can still see their own draft.
@@ -150,16 +161,20 @@ func (s *Server) renderPublicMenu(w http.ResponseWriter, r *http.Request, venue 
 	v.Title = venue.Name(v.Locale.Code)
 	v.Theme = cfg
 	v.Page = &publicPage{
-		Venue:      venue,
-		Categories: shown,
-		Hours:      hours,
-		Config:     cfg,
-		CSSVars:    cfg.Variables(v.Locale.Code),
-		BodyClass:  cfg.BodyClasses(),
-		IsPreview:  preview,
-		MenuURL:    "/m/" + venue.Slug,
-		HasItems:   total > 0,
-		Sections:   sections,
+		Venue:       venue,
+		Categories:  shown,
+		Hours:       hours,
+		Config:      cfg,
+		CSSVars:     cfg.Variables(v.Locale.Code),
+		BodyClass:   cfg.BodyClasses(),
+		IsPreview:   preview,
+		MenuURL:     s.menuPath(venue.Slug),
+		HasItems:    total > 0,
+		TableNumber: validTableNumber(r.URL.Query().Get("table")),
+		Sections:    sections,
+	}
+	if !preview {
+		s.setVenueSEO(v, true)
 	}
 	s.render.Render(w, http.StatusOK, "menu", "public_menu", v)
 }
@@ -186,7 +201,12 @@ func (s *Server) handleQRCode(w http.ResponseWriter, r *http.Request) {
 		size = n
 	}
 
-	png, err := qrcode.Encode(s.absoluteMenuURL(r, venue.Slug), qrcode.Medium, size)
+	table := validTableNumber(r.URL.Query().Get("table"))
+	if r.URL.Query().Get("table") != "" && table == "" {
+		http.Error(w, "Invalid table number (1-9999)", http.StatusBadRequest)
+		return
+	}
+	png, err := qrcode.Encode(tableMenuURL(s.absoluteMenuURL(r, venue.Slug), table), qrcode.Medium, size)
 	if err != nil {
 		logf("qr: encode for %q: %v", slug, err)
 		s.renderError(w, r, http.StatusInternalServerError)
@@ -196,7 +216,11 @@ func (s *Server) handleQRCode(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "image/png")
 	w.Header().Set("Cache-Control", "private, no-store")
 	if r.URL.Query().Get("download") != "" {
-		w.Header().Set("Content-Disposition", `attachment; filename="menu-qr-`+venue.Slug+`.png"`)
+		suffix := ""
+		if table != "" {
+			suffix = "-table-" + table
+		}
+		w.Header().Set("Content-Disposition", `attachment; filename="menu-qr-`+venue.Slug+suffix+`.png"`)
 	}
 	_, _ = w.Write(png)
 }
@@ -204,12 +228,12 @@ func (s *Server) handleQRCode(w http.ResponseWriter, r *http.Request) {
 // absoluteMenuURL builds the public URL a QR code should point at.
 func (s *Server) absoluteMenuURL(r *http.Request, slug string) string {
 	if s.cfg.PublicURL != "" {
-		return s.cfg.PublicURL + "/m/" + slug
+		return s.cfg.PublicURL + s.menuPath(slug)
 	}
 	scheme := "http"
 	if r.TLS != nil {
 		scheme = "https"
 	}
 	host := r.Host
-	return scheme + "://" + host + "/m/" + slug
+	return scheme + "://" + host + s.menuPath(slug)
 }

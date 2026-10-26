@@ -82,6 +82,18 @@ func (r *Restaurant) Address(locale string) string {
 	return pick(locale, r.AddressFa, r.AddressEn)
 }
 
+// Phones separates multiple contact numbers without splitting formatting spaces.
+func (r *Restaurant) Phones() []string {
+	parts := strings.FieldsFunc(r.Phone, func(c rune) bool { return strings.ContainsRune("/,;|\n،", c) })
+	out := make([]string, 0, len(parts))
+	for _, p := range parts {
+		if p = strings.TrimSpace(p); p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
+}
+
 type Category struct {
 	ID            int64
 	RestaurantID  int64
@@ -125,6 +137,7 @@ type Item struct {
 	NameEn        string
 	DescriptionFa string
 	DescriptionEn string
+	PricePending  bool
 	Price         int64
 	DiscountPrice int64
 	ImagePath     string
@@ -145,7 +158,7 @@ func (i *Item) Description(locale string) string {
 
 // HasDiscount reports whether a genuine reduced price is set.
 func (i *Item) HasDiscount() bool {
-	return i.DiscountPrice > 0 && i.DiscountPrice < i.Price
+	return !i.PricePending && i.DiscountPrice > 0 && i.DiscountPrice < i.Price
 }
 
 // EffectivePrice is the amount the customer actually pays.

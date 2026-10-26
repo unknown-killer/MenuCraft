@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="{{.Locale.HTML}}" dir="{{.Locale.Dir}}">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0d0e0b"><meta name="description" content="{{if .SEO}}{{.SEO.Description}}{{else}}{{.Restaurant.Description .Lang}}{{end}}">
+<title>{{.Title}}</title>
+{{template "seo" .}}
+<link rel="icon" href="{{.Restaurant.LogoPath}}">
+<link rel="stylesheet" href="{{.Asset "css/venue.css"}}">
+</head>
+<body><a class="skip" href="#main">{{if .IsRTL}}رفتن به محتوا{{else}}Skip to content{{end}}</a>{{template "content" .}}</body>
+</html>

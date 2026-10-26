@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="{{ .Page.Config.ColorScheme }}">
   <title>{{ .Title }}</title>
+  {{template "seo" .}}
 
   {{/* Applied before first paint so a stored choice never flashes the wrong
        palette. Inline because an external file would arrive too late. */}}
@@ -18,13 +19,14 @@
       } catch (e) { /* private mode: fall back to the theme default */ }
     })();
   </script>
-  {{ with .Page.Venue }}
+  {{if .SEO}}<meta name="description" content="{{.SEO.Description}}">{{else}}{{ with .Page.Venue }}
     <meta name="description" content="{{ .Description $.Lang }}">
-  {{ end }}
-  <link rel="icon" href="/static/img/favicon.svg" type="image/svg+xml">
+  {{ end }}{{end}}
+  <link rel="icon" href="{{if .Page.Venue.LogoPath}}{{.Page.Venue.LogoPath}}{{else}}/static/img/favicon.svg{{end}}">
   <link rel="stylesheet" href="{{ .Asset "css/menu.css" }}">
   <link rel="stylesheet" href="{{ .Asset "css/blocks.css" }}">
   <link rel="stylesheet" href="{{ .Asset "css/canvas.css" }}">
+  <link rel="stylesheet" href="{{ .Asset "css/notebook.css" }}">
 
   {{/* Theme variables generated server-side from the owner's saved config. */}}
   <style id="theme-vars">{{ .Page.CSSVars }}</style>
@@ -36,6 +38,7 @@
 </head>
 <body class="menu-body {{ .Page.BodyClass }}"
       data-venue="{{ .Page.Venue.Slug }}"
+      data-notebook="go-{{ .Page.Venue.ID }}" data-note-venue="{{ .Page.Venue.Name .Lang }}" data-note-currency="{{ currencyLabel .Lang .Page.Venue.Currency }}"
       {{ if .Page.IsPreview }}data-preview="1"{{ end }}>
 
 <a class="m-skip" href="#menu-dishes">{{ .T "pub.skip" }}</a>
@@ -45,5 +48,6 @@
 {{ template "content" . }}
 
 <script src="{{ .Asset "js/menu.js" }}" defer></script>
+<script src="{{ .Asset "js/notebook.js" }}" defer></script>
 </body>
 </html>

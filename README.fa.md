@@ -14,6 +14,16 @@
 
 ![نمونهٔ منوی فارسی](docs/screenshots/menu-fa.jpg)
 
+## 🆕 دفترچهٔ مشتری و استند میز در نسخهٔ ۱٫۲٫۰
+
+**📝 مشتری غذاها را به دفترچه اضافه می‌کند، تعداد و توضیح می‌نویسد و فهرست را به گارسون نشان می‌دهد.** انتخاب‌ها در مرورگر می‌مانند و قابل کپی یا چاپ هستند. شمارهٔ میز از لینک اسکن‌شده وارد دفترچه می‌شود.
+
+**🪧 پنج استند آمادهٔ چاپ:** شماره بالای کد، پایین کد، چپ، راست یا تاشوی دوطرفه. از تنظیمات مجموعه، یک شماره یا بازهٔ میزها را بسازید و روی کاغذ آ۴ چاپ کنید یا پی‌دی‌اف بگیرید.
+
+[📘 راهنمای دفترچه و استند میز](docs/NOTEBOOK_AND_QR.md)
+
+**تازه‌های دیگر:** 💰 قیمت «به‌زودی»، 🖨️ چاپ با رنگ و پس‌زمینهٔ قالب، 🏠 صفحهٔ معرفی تک‌رستوران، 🔎 نقشهٔ سایت و بهبود سئو، ☎️ چند شمارهٔ تماس. [تمام تغییرات و راهنمای ارتقا](docs/releases/1.2.0.md). ارتقا شامل مهاجرت خودکار پایگاه‌داده است؛ ابتدا پشتیبان بگیرید.
+
 ## ⚡ در پنج قدم منوی خود را بسازید
 
 ۱. برنامه را اجرا کنید و حساب مجموعه را بسازید.<br>
@@ -105,11 +115,11 @@
 <table dir="rtl">
 <thead><tr><th align="right">سیستم شما</th><th align="right">دریافت</th><th align="right">روش اجرا</th></tr></thead>
 <tbody>
-<tr><td dir="rtl" align="right">🪟 ویندوز معمولی</td><td dir="rtl" align="right"><a href="https://github.com/unknown-killer/MenuCraft/releases/download/v1.1.0/menucraft_1.1.0_windows_amd64.zip">دانلود نسخهٔ رایانه‌های اینتل و ای‌ام‌دی</a></td><td dir="rtl" align="right">فایل فشرده را استخراج و <code dir="ltr">run.bat</code> را اجرا کنید.</td></tr>
-<tr><td dir="rtl" align="right">🪟 ویندوز آرم</td><td dir="rtl" align="right"><a href="https://github.com/unknown-killer/MenuCraft/releases/download/v1.1.0/menucraft_1.1.0_windows_arm64.zip">دانلود نسخهٔ آرم</a></td><td dir="rtl" align="right">برای دستگاه‌های ویندوزی با پردازندهٔ آرم.</td></tr>
-<tr><td dir="rtl" align="right">🐧 لینوکس معمولی</td><td dir="rtl" align="right"><a href="https://github.com/unknown-killer/MenuCraft/releases/download/v1.1.0/menucraft_1.1.0_linux_amd64.tar.gz">دانلود نسخهٔ ۶۴ بیتی</a></td><td dir="rtl" align="right">آرشیو را استخراج و <code dir="ltr">./run.sh</code> را اجرا کنید.</td></tr>
-<tr><td dir="rtl" align="right">🐧 لینوکس آرم</td><td dir="rtl" align="right"><a href="https://github.com/unknown-killer/MenuCraft/releases/download/v1.1.0/menucraft_1.1.0_linux_arm64.tar.gz">دانلود نسخهٔ آرم</a></td><td dir="rtl" align="right">برای سرور یا دستگاه لینوکسی با پردازندهٔ آرم ۶۴ بیتی.</td></tr>
-<tr><td dir="rtl" align="right">🧩 وردپرس</td><td dir="rtl" align="right"><a href="https://github.com/unknown-killer/MenuCraft/releases/download/v1.1.0/menucraft-wordpress_1.1.0.zip">دانلود افزونهٔ نصب‌شدنی</a></td><td dir="rtl" align="right">از بخش افزونه‌ها، افزودن و بارگذاری افزونه نصب کنید.</td></tr>
+<tr><td dir="rtl" align="right">🪟 ویندوز معمولی</td><td dir="rtl" align="right"><a href="https://github.com/unknown-killer/MenuCraft/releases/download/v1.2.0/menucraft_1.2.0_windows_amd64.zip">دانلود نسخهٔ رایانه‌های اینتل و ای‌ام‌دی</a></td><td dir="rtl" align="right">فایل فشرده را استخراج و <code dir="ltr">run.bat</code> را اجرا کنید.</td></tr>
+<tr><td dir="rtl" align="right">🪟 ویندوز آرم</td><td dir="rtl" align="right"><a href="https://github.com/unknown-killer/MenuCraft/releases/download/v1.2.0/menucraft_1.2.0_windows_arm64.zip">دانلود نسخهٔ آرم</a></td><td dir="rtl" align="right">برای دستگاه‌های ویندوزی با پردازندهٔ آرم.</td></tr>
+<tr><td dir="rtl" align="right">🐧 لینوکس معمولی</td><td dir="rtl" align="right"><a href="https://github.com/unknown-killer/MenuCraft/releases/download/v1.2.0/menucraft_1.2.0_linux_amd64.tar.gz">دانلود نسخهٔ ۶۴ بیتی</a></td><td dir="rtl" align="right">آرشیو را استخراج و <code dir="ltr">./run.sh</code> را اجرا کنید.</td></tr>
+<tr><td dir="rtl" align="right">🐧 لینوکس آرم</td><td dir="rtl" align="right"><a href="https://github.com/unknown-killer/MenuCraft/releases/download/v1.2.0/menucraft_1.2.0_linux_arm64.tar.gz">دانلود نسخهٔ آرم</a></td><td dir="rtl" align="right">برای سرور یا دستگاه لینوکسی با پردازندهٔ آرم ۶۴ بیتی.</td></tr>
+<tr><td dir="rtl" align="right">🧩 وردپرس</td><td dir="rtl" align="right"><a href="https://github.com/unknown-killer/MenuCraft/releases/download/v1.2.0/menucraft-wordpress_1.2.0.zip">دانلود افزونهٔ نصب‌شدنی</a></td><td dir="rtl" align="right">از بخش افزونه‌ها، افزودن و بارگذاری افزونه نصب کنید.</td></tr>
 </tbody></table>
 
 پس از اجرای ویندوز یا لینوکس، [صفحهٔ محلی برنامه](http://127.0.0.1:8080) را باز کنید. برنامه باید هنگام استفاده روشن بماند. برای نمایش به مشتریان اینترنتی، [راهنمای استقرار روی سرور](docs/DEPLOYMENT.md) را دنبال کنید.
@@ -144,8 +154,8 @@
 <div dir="ltr" align="left">
 
 ```sh
-tar -xzf menucraft_1.1.0_linux_amd64.tar.gz
-cd menucraft_1.1.0_linux_amd64
+tar -xzf menucraft_1.2.0_linux_amd64.tar.gz
+cd menucraft_1.2.0_linux_amd64
 ./run.sh
 ```
 
@@ -156,7 +166,7 @@ cd menucraft_1.1.0_linux_amd64
 
 ### اجرا از سورس
 
-پیش‌نیاز: **Go نسخهٔ 1.26.9 یا جدیدتر**. برای خود برنامهٔ Go به Node.js، PHP یا کامپایلر C نیاز نیست.
+پیش‌نیاز: **Go نسخهٔ 1.26.10 یا جدیدتر**. برای خود برنامهٔ Go به Node.js، PHP یا کامپایلر C نیاز نیست.
 
 </div>
 <div dir="ltr" align="left">
@@ -236,7 +246,7 @@ ZIP افزونه را از انتشارها بگیرید و در **افزونه�
 go test ./...
 go vet ./...
 go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
-go run ./cmd/release -version 1.1.0
+go run ./cmd/release -version 1.2.0
 ```
 
 </div>

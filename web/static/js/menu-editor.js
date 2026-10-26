@@ -233,6 +233,10 @@
                           .replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
 
   document.querySelectorAll('[data-price]').forEach((input) => {
+    if (input.name === 'price') input.addEventListener('input', () => {
+      const pending = input.form?.querySelector('[name="price_pending"]');
+      if (pending && Number(toAscii(input.value).replace(/[,٬\s]/g, '')) > 0) pending.checked = false;
+    });
     input.addEventListener('blur', () => {
       const digits = toAscii(input.value).replace(/\D/g, '');
       input.value = digits ? Number(digits).toLocaleString('en-US') : '';

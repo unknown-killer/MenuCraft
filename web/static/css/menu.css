@@ -510,12 +510,16 @@ div.bg-pattern {
 .m-skip { position: fixed; top: -100px; inset-inline-start: 12px; z-index: 100; padding: 12px 20px; background: var(--c-surface); color: var(--c-text); }
 .m-skip:focus { top: 12px; }
 @media print {
-  body { background: white !important; color: black !important; font-size: 11pt; }
-  .bg-layer,div.bg-pattern,.m-cover,.m-search,.m-tools,.m-nav,.m-langs,.m-favorite,.m-skip { display: none !important; }
-  .m-header,.m-header-inner,.m-shell { padding: 10px 0; margin: 0; width: 100%; }
-  .m-grid { display: block !important; }
-  .m-card { break-inside: avoid; box-shadow: none !important; background: white !important; color: black !important; border: 1px solid #ccc; margin: 8px 0; }
-  .m-item-name,.m-price,.m-price strong,.m-item-desc,.m-tag,.m-cat-title { color: black !important; }
-  .m-card-media { max-width: 100px; max-height: 100px; }
+  @page { size: A4; margin: 0; }
+  html,body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  body { padding: 8mm; min-height: auto; background: var(--bg-base, #0f1117); }
+  body[data-notebook]:not(.mc-print-notebook) { padding-bottom: 8mm; }
+  .m-search,.m-tools,.m-nav,.m-langs,.m-favorite,.m-skip { display: none !important; }
+  .m-shell { width: 100%; max-width: none; }
+  .layout-grid .m-grid { grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr)); }
+  .m-card { break-inside: avoid; page-break-inside: avoid; transform: none !important; }
+  .m-foot,.m-hours-card { break-inside: avoid; page-break-inside: avoid; }
+  .m-card-media img { transform: none !important; }
+  .m-cat-title { break-after: avoid; }
   * { animation: none !important; transition: none !important; }
 }

@@ -40,10 +40,14 @@ func (s *Server) handleMenuExport(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Disposition", "attachment; filename=menu-"+v.Restaurant.Slug+".csv")
 		_, _ = w.Write([]byte{0xef, 0xbb, 0xbf}) // Excel recognises Persian UTF-8.
 		writer := csv.NewWriter(w)
-		_ = writer.Write([]string{"category_fa", "category_en", "name_fa", "name_en", "description_fa", "description_en", "price", "discount_price", "currency", "available", "tags"})
+		_ = writer.Write([]string{"category_fa", "category_en", "name_fa", "name_en", "description_fa", "description_en", "price", "discount_price", "currency", "available", "tags", "price_pending"})
 		for _, c := range cats {
 			for _, it := range c.Items {
-				row := []string{c.NameFa, c.NameEn, it.NameFa, it.NameEn, it.DescriptionFa, it.DescriptionEn, strconv.FormatInt(it.Price, 10), strconv.FormatInt(it.DiscountPrice, 10), v.Restaurant.Currency, strconv.FormatBool(it.IsAvailable), strings.Join(it.Tags, ",")}
+				row := []string{c.NameFa, c.NameEn, it.NameFa, it.NameEn, it.DescriptionFa, it.DescriptionEn, strconv.FormatInt(it.Price, 10), strconv.FormatInt(it.DiscountPrice, 10), v.Restaurant.Currency, strconv.FormatBool(it.IsAvailable), strings.Join(it.Tags, ","), strconv.FormatBool(it.PricePending)}
+				if it.PricePending {
+					row[6] = ""
+					row[7] = ""
+				}
 				for i := range row {
 					row[i] = safeCSVCell(row[i])
 				}
@@ -139,7 +143,7 @@ func (s *Server) importMenu(venueID int64, doc menudata.Document, replace bool) 
 					}
 				}
 				item := &models.Item{RestaurantID: venueID, CategoryID: cat.ID, NameFa: it.NameFa, NameEn: it.NameEn,
-					DescriptionFa: it.DescriptionFa, DescriptionEn: it.DescriptionEn, Price: it.Price, DiscountPrice: it.DiscountPrice,
+					DescriptionFa: it.DescriptionFa, DescriptionEn: it.DescriptionEn, Price: it.Price, PricePending: it.PricePending, DiscountPrice: it.DiscountPrice,
 					ImagePath: s.sanitizeUploadPath(venueID, it.ImagePath), Tags: tags, IsAvailable: it.Available, IsFeatured: it.Featured,
 					Calories: it.Calories, PrepMinutes: it.PrepMinutes}
 				if err := tx.Items.Create(item); err != nil {

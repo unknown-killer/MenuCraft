@@ -35,6 +35,7 @@ const apply = () => {
   cats.forEach(cat => {
     const items = [...cat.querySelectorAll('.m-card')], grid = cat.querySelector('.m-grid');
     items.sort((a,b) => {
+      if ((sort?.value === 'low' || sort?.value === 'high') && (a.dataset.price === "" || b.dataset.price === "")) return Number(a.dataset.price === "") - Number(b.dataset.price === "");
       const diff = Number(a.dataset.price)-Number(b.dataset.price);
       return sort?.value === 'low' ? diff : sort?.value === 'high' ? -diff : Number(a.dataset.order)-Number(b.dataset.order);
     }).forEach(c => grid?.append(c));
@@ -80,9 +81,17 @@ $('[data-reset]')?.addEventListener('click',() => {
   $$('[data-diet], [data-favorites-only]').forEach(b => b.setAttribute('aria-pressed','false'));
   syncNav(); apply(); search?.focus();
 });
-$('[data-print]')?.addEventListener('click',() => window.print());
+// Eager decoding avoids blank photos when printing a long, lazy-loaded menu.
+const preparePrintImages = async () => {
+  await document.fonts.ready;
+  await Promise.allSettled($$('img').map(img => { img.loading='eager'; return img.decode(); }));
+};
+window.addEventListener('beforeprint',() => { $$('img').forEach(img=>img.loading='eager'); });
+$('[data-print]')?.addEventListener('click',async () => { await preparePrintImages(); window.print(); });
 $('[data-share]')?.addEventListener('click',async e => {
-  const b=e.currentTarget,url=new URL(location.href); url.search=''; url.hash='';
+  const b=e.currentTarget,url=new URL(location.href), table=url.searchParams.get('table'), lang=url.searchParams.get('lang'); url.search=''; url.hash='';
+  if(table && /^[0-9۰-۹٠-٩]{1,4}$/.test(table))url.searchParams.set('table',table);
+  if(lang==='fa'||lang==='en')url.searchParams.set('lang',lang);
   try {
     if(navigator.share){ await navigator.share({title:document.title,url:url.href}); return; }
     await navigator.clipboard.writeText(url.href); if(count)count.textContent=b.dataset.copied;

@@ -26,3 +26,7 @@ dist/
 .env
 coverage.out
 _site/
+
+# Local venue deliverables and certificates
+output/
+*.pem

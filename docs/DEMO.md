@@ -6,7 +6,7 @@ Studio settings are saved in browser storage. They do not modify a restaurant da
 
 ## Build locally
 
-Run from the repository root with Go 1.26.9 or newer:
+Run from the repository root with Go 1.26.10 or newer:
 
 ```sh
 go run ./cmd/demo -output _site

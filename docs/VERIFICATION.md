@@ -1,6 +1,24 @@
 # Verification / گزارش بررسی
 
-Verified during the 1.1.0 preparation on 2026-10-13.
+## Version 1.2.0 — 2026-10-26
+
+- Windows: `go test ./...` and `go vet ./...` passed with Go 1.26.10.
+- `govulncheck@v1.9.0`: no vulnerabilities found after upgrading from Go 1.26.9 to 1.26.10 for GO-2026-6809.
+- Node notebook tests (4) passed, including exact totals, input bounds, unavailable items and byte-identical WordPress assets.
+- PHP plugin syntax and changed JavaScript syntax checks passed.
+- Static demo generation produced 114 themes in both languages.
+- New HTTP/SQLite tests cover table QR batches, draft access, pending-price save/export/import/manual pricing, canonical metadata, sitemap, default language, saved landing-page details and the single-venue WordPress embed boundary.
+- Release automation runs native Windows/Linux tests, builds four platform targets and checks the packaged Linux executable readiness before publishing. Check the matching Actions run for final artifact evidence. ARM64 targets are cross-compiled, not hardware-tested.
+
+<div dir="rtl">
+
+آزمون‌های برنامه، دفترچه، نحو افزونه و اسکن امنیتی موفق بودند. نسخهٔ Go برای رفع آسیب‌پذیری کتابخانهٔ استاندارد ارتقا یافت. فایل‌های خصوصی استقرار، داده‌های مشتری، کلیدها و تصاویر اختصاصی رستوران در انتشار عمومی قرار ندارند. جزئیات اجرای ساخت بسته‌ها در گزارش همان ریلیز ثبت می‌شود.
+
+</div>
+
+## Historical checks: version 1.1.0 — 2026-10-13
+
+The following records describe the previous release preparation, not a new WordPress runtime certification.
 
 ## Automated checks
 

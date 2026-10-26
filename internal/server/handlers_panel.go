@@ -158,8 +158,12 @@ func (s *Server) handleSettingsSave(w http.ResponseWriter, r *http.Request) {
 	venue.Telegram = formStr(r, "telegram")
 	venue.WhatsApp = formStr(r, "whatsapp")
 	venue.Website = formStr(r, "website")
-	venue.LogoPath = s.sanitizeUploadPath(venue.ID, formStr(r, "logo_path"))
-	venue.CoverPath = s.sanitizeUploadPath(venue.ID, formStr(r, "cover_path"))
+	if path := formStr(r, "logo_path"); path != venue.LogoPath {
+		venue.LogoPath = s.sanitizeUploadPath(venue.ID, path)
+	}
+	if path := formStr(r, "cover_path"); path != venue.CoverPath {
+		venue.CoverPath = s.sanitizeUploadPath(venue.ID, path)
+	}
 	venue.IsPublished = formBool(r, "is_published")
 
 	if bt := formStr(r, "business_type"); validBusinessType(bt) {

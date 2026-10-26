@@ -26,6 +26,7 @@ type Config struct {
 	PublicURL           string
 	EmbedOrigins        []string
 	DisableRegistration bool
+	VenueSlug           string
 }
 
 // Load reads configuration from the environment. Any missing value falls back
@@ -43,6 +44,7 @@ func Load() *Config {
 		Env:                 env("MENU_ENV", "development"),
 		PublicURL:           strings.TrimRight(env("MENU_PUBLIC_URL", ""), "/"),
 		DisableRegistration: strings.EqualFold(env("MENU_DISABLE_REGISTRATION", "false"), "true"),
+		VenueSlug:           env("MENU_VENUE_SLUG", ""),
 	}
 	if cfg.PublicURL != "" && !validOrigin(cfg.PublicURL) {
 		log.Fatal("config: MENU_PUBLIC_URL must be an http(s) origin without a path, credentials or query")

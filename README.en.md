@@ -12,6 +12,16 @@ Made for restaurants, cafés, fast food and other food businesses. Create a bili
 
 <p dir="rtl" align="right"><a href="README.fa.md">🇮🇷 راهنمای فارسی</a></p>
 
+## 🆕 Guest notebook and table stands in 1.2.0
+
+**📝 Guests can add dishes to a notebook, set quantities, write notes and show the list to their waiter.** Selections stay in their browser and can be copied or printed. Scanning a table QR prefills the notebook’s table number. This does not submit an order.
+
+**🪧 Five printable stands:** table number above, below, left or right of the QR, plus a double-sided folded tent. Generate one table or a numbered batch from restaurant settings, then print on A4 or save as PDF.
+
+[📘 Notebook and table stand guide](docs/NOTEBOOK_AND_QR.md)
+
+**Also new:** 💰 pending prices, 🖨️ theme-preserving print, 🏠 a configurable single-venue landing page, 🔎 sitemap/search metadata and ☎️ multiple phone links. See [all changes and upgrade notes](docs/releases/1.2.0.md). Upgrade applies an automatic database migration; back up first.
+
 ## ⚡ Your first menu in five steps
 
 1. Run the app and register your restaurant account.
@@ -103,11 +113,11 @@ Made for restaurants, cafés, fast food and other food businesses. Create a bili
 <table dir="ltr">
 <thead><tr><th align="left">Platform</th><th align="left">Download</th><th align="left">Start</th></tr></thead>
 <tbody>
-<tr><td dir="ltr" align="left">🪟 Windows · Intel/AMD</td><td dir="ltr" align="left"><a href="https://github.com/unknown-killer/MenuCraft/releases/download/v1.1.0/menucraft_1.1.0_windows_amd64.zip">amd64 ZIP</a></td><td dir="ltr" align="left">Extract and run <code>run.bat</code>.</td></tr>
-<tr><td dir="ltr" align="left">🪟 Windows · ARM</td><td dir="ltr" align="left"><a href="https://github.com/unknown-killer/MenuCraft/releases/download/v1.1.0/menucraft_1.1.0_windows_arm64.zip">arm64 ZIP</a></td><td dir="ltr" align="left">For Windows on ARM devices.</td></tr>
-<tr><td dir="ltr" align="left">🐧 Linux · Intel/AMD</td><td dir="ltr" align="left"><a href="https://github.com/unknown-killer/MenuCraft/releases/download/v1.1.0/menucraft_1.1.0_linux_amd64.tar.gz">amd64 archive</a></td><td dir="ltr" align="left">Extract and run <code>./run.sh</code>.</td></tr>
-<tr><td dir="ltr" align="left">🐧 Linux · ARM</td><td dir="ltr" align="left"><a href="https://github.com/unknown-killer/MenuCraft/releases/download/v1.1.0/menucraft_1.1.0_linux_arm64.tar.gz">arm64 archive</a></td><td dir="ltr" align="left">For 64-bit ARM Linux machines.</td></tr>
-<tr><td dir="ltr" align="left">🧩 WordPress</td><td dir="ltr" align="left"><a href="https://github.com/unknown-killer/MenuCraft/releases/download/v1.1.0/menucraft-wordpress_1.1.0.zip">Plugin ZIP</a></td><td dir="ltr" align="left">Install through Plugins → Add New → Upload Plugin.</td></tr>
+<tr><td dir="ltr" align="left">🪟 Windows · Intel/AMD</td><td dir="ltr" align="left"><a href="https://github.com/unknown-killer/MenuCraft/releases/download/v1.2.0/menucraft_1.2.0_windows_amd64.zip">amd64 ZIP</a></td><td dir="ltr" align="left">Extract and run <code>run.bat</code>.</td></tr>
+<tr><td dir="ltr" align="left">🪟 Windows · ARM</td><td dir="ltr" align="left"><a href="https://github.com/unknown-killer/MenuCraft/releases/download/v1.2.0/menucraft_1.2.0_windows_arm64.zip">arm64 ZIP</a></td><td dir="ltr" align="left">For Windows on ARM devices.</td></tr>
+<tr><td dir="ltr" align="left">🐧 Linux · Intel/AMD</td><td dir="ltr" align="left"><a href="https://github.com/unknown-killer/MenuCraft/releases/download/v1.2.0/menucraft_1.2.0_linux_amd64.tar.gz">amd64 archive</a></td><td dir="ltr" align="left">Extract and run <code>./run.sh</code>.</td></tr>
+<tr><td dir="ltr" align="left">🐧 Linux · ARM</td><td dir="ltr" align="left"><a href="https://github.com/unknown-killer/MenuCraft/releases/download/v1.2.0/menucraft_1.2.0_linux_arm64.tar.gz">arm64 archive</a></td><td dir="ltr" align="left">For 64-bit ARM Linux machines.</td></tr>
+<tr><td dir="ltr" align="left">🧩 WordPress</td><td dir="ltr" align="left"><a href="https://github.com/unknown-killer/MenuCraft/releases/download/v1.2.0/menucraft-wordpress_1.2.0.zip">Plugin ZIP</a></td><td dir="ltr" align="left">Install through Plugins → Add New → Upload Plugin.</td></tr>
 </tbody></table>
 
 Then open [the local app](http://127.0.0.1:8080). Keep the application running while using it. To make it available to guests online, follow the [server deployment guide](docs/DEPLOYMENT.md).
@@ -139,8 +149,8 @@ Download the Windows ZIP for your CPU from [Releases](https://github.com/unknown
 Download the Linux archive for your CPU, then:
 
 ```sh
-tar -xzf menucraft_1.1.0_linux_amd64.tar.gz
-cd menucraft_1.1.0_linux_amd64
+tar -xzf menucraft_1.2.0_linux_amd64.tar.gz
+cd menucraft_1.2.0_linux_amd64
 ./run.sh
 ```
 
@@ -148,7 +158,7 @@ Open [localhost:8080](http://127.0.0.1:8080). The launch scripts bind to loopbac
 
 ### From source
 
-Requires **Go 1.26.9 or newer**. No Node.js, PHP or C compiler is needed for the Go application.
+Requires **Go 1.26.10 or newer**. No Node.js, PHP or C compiler is needed for the Go application.
 
 ```sh
 go mod download
@@ -198,7 +208,7 @@ The generated secret is stored as `.secret` beside the database. Keep it persist
 
 ## WordPress
 
-Upload `menucraft-wordpress_1.1.0.zip` from the release to **Plugins → Add New → Upload Plugin**, activate it, then open **Settings → MenuCraft**.
+Upload `menucraft-wordpress_1.2.0.zip` from the release to **Plugins → Add New → Upload Plugin**, activate it, then open **Settings → MenuCraft**.
 
 - **Native mode:** export JSON from the Go panel, import it in WordPress and add `[menucraft_menu lang="fa"]` or `[menucraft_menu lang="en"]` to a page. It supports bilingual content, responsive cards, prices, search and categories.
 - **Live mode:** configure the published Go URL and permit the WordPress origin with `MENU_EMBED_ORIGINS` on the Go server.
@@ -211,7 +221,7 @@ Native mode imports a snapshot; it does not reproduce Go themes/canvas or synchr
 go test ./...
 go vet ./...
 go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
-go run ./cmd/release -version 1.1.0
+go run ./cmd/release -version 1.2.0
 ```
 
 The release command builds Windows/Linux binaries for **amd64 and arm64**, adds launch scripts and documentation, packages the WordPress plugin and writes `dist/SHA256SUMS.txt`. It requires Git and Go with verified module downloads; do not disable the Go checksum database.

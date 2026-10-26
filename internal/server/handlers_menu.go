@@ -169,6 +169,7 @@ func (s *Server) handleItemSave(w http.ResponseWriter, r *http.Request) {
 		DescriptionFa: formStr(r, "description_fa"),
 		DescriptionEn: formStr(r, "description_en"),
 		Price:         formInt(r, "price"),
+		PricePending:  formBool(r, "price_pending"),
 		DiscountPrice: formInt(r, "discount_price"),
 		ImagePath:     s.sanitizeUploadPath(v.Restaurant.ID, formStr(r, "image_path")),
 		Tags:          selectedTags(r),
@@ -182,6 +183,10 @@ func (s *Server) handleItemSave(w http.ResponseWriter, r *http.Request) {
 			s.menuRedirect(w, r, "error", v.T("err.price"))
 			return
 		}
+	}
+	if item.PricePending {
+		item.Price = 0
+		item.DiscountPrice = 0
 	}
 	if item.Price > menudata.MaxPrice || item.DiscountPrice > menudata.MaxPrice ||
 		(item.DiscountPrice > 0 && item.DiscountPrice >= item.Price) || item.Calories > 100000 || item.PrepMinutes > 10080 {

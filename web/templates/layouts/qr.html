@@ -1,0 +1,5 @@
+<!doctype html>
+<html lang="{{ .Locale.HTML }}" dir="{{ .Locale.Dir }}">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{{ .Title }}</title><link rel="stylesheet" href="{{ .Asset "css/qr.css" }}"></head>
+<body>{{ template "content" . }}<script src="{{ .Asset "js/qr.js" }}" defer></script></body>
+</html>
